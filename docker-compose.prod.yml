@@ -3,8 +3,6 @@
 # SISTEM DETEKSI ORISINALITAS LAPORAN STITEK BONTANG
 # =============================================================================
 
-version: '3.8'
-
 networks:
   stitek-network:
     name: stitek-internal-network

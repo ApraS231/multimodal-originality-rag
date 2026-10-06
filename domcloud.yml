@@ -5,7 +5,6 @@
 
 source: https://github.com/ApraS231/multimodal-originality-rag.git
 branch: main
-directory: Project-AI
 
 features:
   - docker
