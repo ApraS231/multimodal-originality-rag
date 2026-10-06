@@ -1,0 +1,102 @@
+version: '3.8'
+
+networks:
+  stitek-network:
+    name: stitek-internal-network
+    driver: bridge
+
+volumes:
+  stitek_ai_images:
+    name: stitek_ai_extracted_images
+    driver: local
+
+services:
+  # =========================================================================
+  # 1. LAYANAN INFERENSI CERDAS & PEMROSESAN MULTIMODAL (PYTHON FASTAPI)
+  # =========================================================================
+  ai-service:
+    build:
+      context: ./AI-service
+      dockerfile: Dockerfile
+    container_name: stitek-ai-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - FASTAPI_PORT=8000
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - TAUTAN_SUPABASE=${TAUTAN_SUPABASE}
+      - KUNCI_API_SUPABASE=${KUNCI_API_SUPABASE}
+      - RRF_K=${RRF_K:-60}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-25}
+      - CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:3000,http://localhost:5173,http://frontend,http://backend
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+    volumes:
+      - stitek_ai_images:/app/static/extracted_images
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - stitek-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # =========================================================================
+  # 2. GERBANG API APLIKASI, AUTENTIKASI & ORKESTRASI (BUN ELYSIAJS)
+  # =========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stitek-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - FASTAPI_SERVICE_URL=http://ai-service:8000
+    depends_on:
+      ai-service:
+        condition: service_healthy
+    networks:
+      - stitek-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # =========================================================================
+  # 3. KLIEN ANTARMUKA PENGGUNA SINGLE PAGE APPLICATION (VITE REACT + NGINX)
+  # =========================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BACKEND_URL: /api
+    container_name: stitek-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - stitek-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

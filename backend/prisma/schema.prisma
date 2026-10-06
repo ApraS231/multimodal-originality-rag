@@ -1,0 +1,231 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ProgramStudi {
+  id_program_studi String            @id @default(uuid())
+  nama_prodi       String            @unique
+  kelas            Kelas[]
+  laporan          Laporan[]
+  penggunaan_token PenggunaanToken[]
+
+  @@map("program_studi")
+}
+
+model Kelas {
+  id_kelas         String       @id @default(uuid())
+  nama_kelas       String
+  id_program_studi String
+  prodi            ProgramStudi @relation(fields: [id_program_studi], references: [id_program_studi], onDelete: Cascade)
+  laporan          Laporan[]
+  kelas_aslab      KelasAslab[]
+
+  @@map("kelas")
+}
+
+model MataKuliah {
+  id_mata_kuliah String        @id @default(uuid())
+  nama_matkul    String        @unique
+  laporan        Laporan[]
+  matkul_aslab   MatkulAslab[]
+
+  @@map("mata_kuliah")
+}
+
+model Pengguna {
+  id                 String              @id @default(uuid()) @map("id_pengguna")
+  email              String              @unique
+  kata_sandi         String
+  nama               String
+  tanggal_dibuat     DateTime            @default(now())
+  profil             ProfilPengguna?
+  laporan_verifikasi Laporan[]           @relation("LaporanVerifikasi")
+  laporan_unggahan   Laporan[]           @relation("LaporanUnggahan")
+  sesi_lucia         Sesi[]
+  sesi_obrolan       SesiObrolan[]
+  penggunaan_chatbot PenggunaanChatbot[]
+  aktivitas_admin    AktivitasAdmin[]
+
+  @@map("pengguna")
+}
+
+model ProfilPengguna {
+  id_profil      String        @id @default(uuid())
+  id_pengguna    String        @unique
+  pengguna       Pengguna      @relation(fields: [id_pengguna], references: [id], onDelete: Cascade)
+  peran          String        @default("ASLAB") // Pilihan: ADMIN, ASLAB, KEPALA_LAB
+  nim            String?
+  kode_aslab     String?
+  kode_kalab     String?
+  tanggal_dibuat     DateTime      @default(now())
+  status_persetujuan String        @default("APPROVED") // Pilihan: PENDING, APPROVED, REJECTED
+  kelas_aslab        KelasAslab[]
+  matkul_aslab       MatkulAslab[]
+
+  @@map("profil_pengguna")
+}
+
+model Sesi {
+  id        String   @id @map("id_sesi")
+  userId    String   @map("id_pengguna")
+  expiresAt DateTime @map("tanggal_kedaluwarsa")
+  pengguna  Pengguna @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sesi")
+}
+
+model Laporan {
+  id_laporan                String             @id @default(uuid())
+  nama_mahasiswa            String?
+  nim                       String?
+  tahun_akademik            Int
+  tautan_berkas             String
+  skor_orisinalitas         Decimal            @db.Decimal(5, 2)
+  skor_plagiarisme          Decimal            @db.Decimal(5, 2)
+  skor_orisinalitas_koreksi Decimal?           @db.Decimal(5, 2)
+  nilai_huruf               String?
+  apakah_diverifikasi       Boolean            @default(false)
+  status                    String             @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
+  id_verifikator            String?
+  verifikator               Pengguna?          @relation("LaporanVerifikasi", fields: [id_verifikator], references: [id])
+  id_program_studi          String
+  prodi                     ProgramStudi       @relation(fields: [id_program_studi], references: [id_program_studi])
+  id_kelas                  String
+  kelas                     Kelas              @relation(fields: [id_kelas], references: [id_kelas])
+  id_mata_kuliah            String
+  matkul                    MataKuliah         @relation(fields: [id_mata_kuliah], references: [id_mata_kuliah])
+  id_pengunggah             String
+  pengunggah                Pengguna           @relation("LaporanUnggahan", fields: [id_pengunggah], references: [id])
+  tanggal_dibuat            DateTime           @default(now())
+  laporan_gambar            LaporanGambar[]
+  penggunaan_token          PenggunaanToken[]
+  sesi_obrolan              SesiObrolan[]
+  detail_orisinalitas       Json?
+
+  @@map("laporan")
+}
+
+model LaporanGambar {
+  id_laporan_gambar String  @id @default(uuid())
+  lokasi_gambar     String
+  nomor_halaman     Int
+  id_vektor_qdrant  String
+  id_laporan        String
+  laporan           Laporan @relation(fields: [id_laporan], references: [id_laporan], onDelete: Cascade)
+
+  @@map("laporan_gambar")
+}
+
+model PenggunaanToken {
+  id_penggunaan_token String       @id @default(uuid())
+  nama_model          String
+  token_input         Int
+  token_output        Int
+  total_token         Int
+  estimasi_biaya      Decimal      @db.Decimal(10, 5)
+  id_laporan          String?
+  laporan             Laporan?     @relation(fields: [id_laporan], references: [id_laporan], onDelete: SetNull)
+  id_program_studi    String
+  prodi               ProgramStudi @relation(fields: [id_program_studi], references: [id_program_studi])
+  tanggal_dibuat      DateTime     @default(now())
+
+  @@map("penggunaan_token")
+}
+
+model AktivitasAdmin {
+  id_aktivitas_admin String   @id @default(uuid())
+  id_aktor           String
+  aktor              Pengguna @relation(fields: [id_aktor], references: [id])
+  jenis_tindakan     String
+  entitas_target     String
+  deskripsi          String
+  alamat_ip          String
+  agen_pengguna      String
+  tanggal_dibuat     DateTime @default(now())
+
+  @@map("aktivitas_admin")
+}
+
+model KonfigurasiSistem {
+  id_konfigurasi     String   @id @default("global")
+  nama_model_ai      String   @default("groq/llama3-8b-8192")
+  kunci_api_gemini   String?
+  kunci_api_openai   String?
+  kunci_api_groq     String?
+  tautan_supabase    String?
+  kunci_api_supabase String?
+  kunci_kustom       Json?
+  rrf_k              Int      @default(60)
+  prompt_sistem      String   @db.Text
+  batas_unggahan     Int      @default(30)
+  batas_pesan        Int      @default(50)
+  tanggal_diperbarui DateTime @updatedAt
+
+  @@map("konfigurasi_sistem")
+}
+
+model SesiObrolan {
+  id_sesi_obrolan    String         @id @default(uuid())
+  judul_sesi         String
+  id_pengguna        String
+  pengguna           Pengguna       @relation(fields: [id_pengguna], references: [id], onDelete: Cascade)
+  id_laporan         String?
+  laporan            Laporan?       @relation(fields: [id_laporan], references: [id_laporan], onDelete: Cascade)
+  pesan_obrolan      PesanObrolan[]
+  tanggal_dibuat     DateTime       @default(now())
+  tanggal_diperbarui DateTime       @updatedAt
+
+  @@map("sesi_obrolan")
+}
+
+model PesanObrolan {
+  id_pesan_obrolan String      @id @default(uuid())
+  id_sesi_obrolan  String
+  sesi_obrolan     SesiObrolan @relation(fields: [id_sesi_obrolan], references: [id_sesi_obrolan], onDelete: Cascade)
+  pengirim         String // USER atau AI
+  teks             String      @db.Text
+  tanggal_dibuat   DateTime    @default(now())
+
+  @@map("pesan_obrolan")
+}
+
+model PenggunaanChatbot {
+  id_penggunaan_chatbot String   @id @default(uuid())
+  id_pengguna           String
+  pengguna              Pengguna @relation(fields: [id_pengguna], references: [id], onDelete: Cascade)
+  jumlah                Int      @default(0)
+  tanggal               String // Format: YYYY-MM-DD
+  tanggal_dibuat        DateTime @default(now())
+
+  @@unique([id_pengguna, tanggal])
+  @@map("penggunaan_chatbot")
+}
+
+model KelasAslab {
+  id_kelas_aslab String         @id @default(uuid())
+  id_profil      String
+  profil         ProfilPengguna @relation(fields: [id_profil], references: [id_profil], onDelete: Cascade)
+  id_kelas       String
+  kelas          Kelas          @relation(fields: [id_kelas], references: [id_kelas], onDelete: Cascade)
+
+  @@unique([id_profil, id_kelas])
+  @@map("kelas_aslab")
+}
+
+model MatkulAslab {
+  id_matkul_aslab String         @id @default(uuid())
+  id_profil       String
+  profil          ProfilPengguna @relation(fields: [id_profil], references: [id_profil], onDelete: Cascade)
+  id_mata_kuliah  String
+  matkul          MataKuliah     @relation(fields: [id_mata_kuliah], references: [id_mata_kuliah], onDelete: Cascade)
+
+  @@unique([id_profil, id_mata_kuliah])
+  @@map("matkul_aslab")
+}

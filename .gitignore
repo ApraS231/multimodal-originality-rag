@@ -1,0 +1,50 @@
+# =============================================================================
+# .gitignore: PROJECT-AI MICROSERVICES (STITEK BONTANG)
+# =============================================================================
+
+# Variabel Lingkungan Rahasia
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# Kunci API & Sertifikat
+*.pem
+*.key
+*.cert
+
+# Python & AI Microservice
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+.cache/
+
+# Node.js & Bun
+node_modules/
+bun.lockb
+*.log
+dist/
+.vite/
+
+# Media & Storage
+AI-service/static/extracted_images/*
+!AI-service/static/extracted_images/.gitkeep
+qdrant_storage/
+volumes/
+data/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

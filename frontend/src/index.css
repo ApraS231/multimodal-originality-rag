@@ -1,0 +1,594 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@xyflow/react/dist/style.css";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;750&family=Space+Grotesk:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-brutalism);
+    --font-sans: var(--font-readable);
+  }
+  
+  :root {
+    /* ══════════════════════════════════════════════════════ */
+    /* Golden Ratio Official Palette (STITEK Bontang)        */
+    /* 60% Dominan: Alabaster White (#F7F3E9)                 */
+    /* 30% Struktur: Deep Sapphire (#0D1B2A) & Steel Navy    */
+    /* 10% Aksen: Metallic Brass (#D4AF37)                   */
+    /* ══════════════════════════════════════════════════════ */
+    --background: #F7F3E9;          /* 60% Alabaster White Canvas */
+    --foreground: #0D1B2A;          /* 30% Deep Sapphire Text */
+    
+    --card: #FFFFFF;                /* Pure White Card on Alabaster Canvas */
+    --card-foreground: #0D1B2A;     /* Deep Sapphire */
+    
+    --popover: #F7F3E9;
+    --popover-foreground: #0D1B2A;
+    
+    --primary: #0D1B2A;             /* 30% Deep Sapphire Primary Structure */
+    --primary-foreground: #F7F3E9;  /* Alabaster White */
+    
+    --secondary: #415A77;           /* 30% Steel Navy Secondary Text & Borders */
+    --secondary-foreground: #F7F3E9;
+    
+    --muted: rgba(65, 90, 119, 0.12);
+    --muted-foreground: #415A77;    /* Steel Navy */
+    
+    --accent: #D4AF37;              /* 10% Metallic Brass Focal Accent */
+    --accent-foreground: #0D1B2A;   /* Deep Sapphire for AAA Contrast */
+    
+    --destructive: #DC2626;         /* Crimson 600 */
+    --destructive-foreground: #F7F3E9;
+    
+    --border: rgba(65, 90, 119, 0.22); /* Steel Navy Translucent Border */
+    --input: rgba(65, 90, 119, 0.3);
+    --ring: #D4AF37;                /* Metallic Brass Focus Ring */
+    
+    --radius: 8px;                  /* 8px rounded-lg per DESIGN.md R-11 */
+    
+    --font-brutalism: 'Space Grotesk', sans-serif;
+    --font-readable: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  .dark {
+    /* Mode Gelap Terstruktur: Deep Sapphire Base Canvas */
+    --background: #0D1B2A;          /* Deep Sapphire Base Canvas */
+    --foreground: #F7F3E9;          /* Alabaster White High Contrast Text */
+    
+    --card: #152238;                /* Elevated Deep Sapphire Card */
+    --card-foreground: #F7F3E9;
+    
+    --popover: #152238;
+    --popover-foreground: #F7F3E9;
+    
+    --primary: #D4AF37;             /* Metallic Brass */
+    --primary-foreground: #0D1B2A;  /* Deep Sapphire */
+    
+    --secondary: #415A77;           /* Steel Navy */
+    --secondary-foreground: #F7F3E9;
+    
+    --muted: rgba(65, 90, 119, 0.25);
+    --muted-foreground: #A4B3C6;
+    
+    --accent: #D4AF37;              /* Metallic Brass */
+    --accent-foreground: #0D1B2A;
+    
+    --destructive: #EF4444;
+    --destructive-foreground: #F7F3E9;
+    
+    --border: rgba(65, 90, 119, 0.35);
+    --input: rgba(65, 90, 119, 0.4);
+    --ring: #D4AF37;
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+    font-family: var(--font-readable);
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    @apply font-sans;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-brutalism);
+  }
+}
+
+/* Antislop Standardized Card Utility */
+.bento-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bento-card:hover {
+  border-color: rgba(148, 163, 184, 0.5);
+  box-shadow: 0 2px 4px 0 rgba(15, 23, 42, 0.06);
+}
+
+/* ScrollReveal GSAP Styles */
+.scroll-reveal {
+  margin: 20px 0;
+}
+
+.scroll-reveal-text {
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.word {
+  display: inline-block;
+}
+
+/* Pipeline Strip: Brutalist step sequence for detection workflow */
+.pipeline-strip {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  width: 100%;
+}
+
+.pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  max-width: 180px;
+}
+
+.pipeline-step-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+.pipeline-step-btn:hover {
+  background: #FFFFFF;
+  border-color: #0D1B2A;
+  box-shadow: 2px 2px 0px rgba(13, 27, 42, 0.12);
+}
+.pipeline-step-btn[aria-expanded="true"] {
+  background: #FFFFFF;
+  border-color: #0D1B2A;
+  box-shadow: 3px 3px 0px #D4AF37;
+}
+.pipeline-step-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #D4AF37;
+}
+.pipeline-step-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #D4AF37, 0 0 0 4px rgba(212, 175, 55, 0.25);
+}
+
+.pipeline-step-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out;
+  background: rgba(65, 90, 119, 0.08);
+  color: #415A77;
+  border: 1.5px solid transparent;
+}
+.pipeline-step-btn[aria-expanded="true"] .pipeline-step-icon {
+  background: #0D1B2A;
+  color: #D4AF37;
+  border-color: #0D1B2A;
+}
+.pipeline-step-btn:hover .pipeline-step-icon {
+  background: rgba(65, 90, 119, 0.14);
+  color: #0D1B2A;
+  border-color: rgba(65, 90, 119, 0.25);
+}
+.pipeline-step-btn[aria-expanded="true"]:hover .pipeline-step-icon {
+  background: #0D1B2A;
+  color: #D4AF37;
+  border-color: #0D1B2A;
+}
+
+.pipeline-step-label {
+  font-family: var(--font-brutalism, 'Space Grotesk', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: #415A77;
+  text-align: center;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: color 150ms ease-out;
+}
+.pipeline-step-btn[aria-expanded="true"] .pipeline-step-label {
+  color: #0D1B2A;
+}
+.pipeline-step-btn:hover .pipeline-step-label {
+  color: #0D1B2A;
+}
+
+.pipeline-step-index {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: #415A77;
+  background: rgba(65, 90, 119, 0.08);
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(65, 90, 119, 0.12);
+  transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out;
+}
+.pipeline-step-btn[aria-expanded="true"] .pipeline-step-index {
+  background: #D4AF37;
+  color: #0D1B2A;
+  border-color: #0D1B2A;
+}
+
+/* Connector lines between pipeline steps */
+.pipeline-connector {
+  position: absolute;
+  top: 38px;
+  height: 2.5px;
+  background: #0D1B2A;
+  opacity: 0.15;
+  z-index: 1;
+  transition: opacity 200ms ease-out;
+}
+
+/* Detail panel below the strip */
+.pipeline-detail-panel {
+  background: #FFFFFF;
+  border: 2px solid #0D1B2A;
+  border-radius: 4px;
+  padding: 20px 24px;
+  position: relative;
+  box-shadow: 4px 4px 0px #D4AF37;
+}
+.pipeline-detail-panel::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 14px;
+  height: 14px;
+  background: #FFFFFF;
+  border-left: 2px solid #0D1B2A;
+  border-top: 2px solid #0D1B2A;
+  transform: rotate(45deg);
+  transition: left 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Vertical layout for mobile */
+@media (max-width: 767px) {
+  .pipeline-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .pipeline-step {
+    max-width: 100%;
+    flex-direction: row;
+  }
+  .pipeline-step-btn {
+    flex-direction: row;
+    gap: 12px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+  .pipeline-step-label {
+    text-align: left;
+  }
+  .pipeline-connector {
+    display: none;
+  }
+  .pipeline-detail-panel::before {
+    display: none;
+  }
+  .pipeline-detail-panel {
+    box-shadow: 3px 3px 0px #D4AF37;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-step-btn,
+  .pipeline-step-icon,
+  .pipeline-step-label,
+  .pipeline-step-index,
+  .pipeline-connector,
+  .pipeline-detail-panel::before {
+    transition: none !important;
+  }
+}
+
+/* Interactive Slider styling */
+.custom-range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(65, 90, 119, 0.25);
+  outline: none;
+  transition: background 0.3s;
+}
+
+.custom-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #0D1B2A;
+  border: 2px solid #D4AF37;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.custom-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Custom UI nodes */
+.interactive-pipeline-line {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  transition: stroke-dashoffset 0.1s ease-out;
+}
+
+/* Custom smooth height grid transitions */
+.grid-transition-height {
+  display: grid;
+  transition: grid-template-rows 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 360ms ease, margin-top 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.grid-transition-height-closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0px;
+}
+.grid-transition-height-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 10px;
+}
+.grid-transition-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* Premium Micro-Animation Keyframes                  */
+/* ═══════════════════════════════════════════════════ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(65, 90, 119, 0.06) 25%,
+    rgba(65, 90, 119, 0.12) 50%,
+    rgba(65, 90, 119, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* Custom Scrollbar (Sidebar & Table Overflow)        */
+/* ═══════════════════════════════════════════════════ */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(65, 90, 119, 0.15);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(65, 90, 119, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════ */
+/* Sidebar Collapse Transition                        */
+/* ═══════════════════════════════════════════════════ */
+
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-label-transition {
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+/* Mobile Drawer Overlay */
+.drawer-overlay {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.drawer-slide-in {
+  animation: drawer-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes drawer-enter {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* React Flow DAG Overrides: STITEK Design System */
+
+.react-flow__background {
+  background: var(--background) !important;
+}
+
+.react-flow__minimap {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.react-flow__controls {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(13, 27, 42, 0.06);
+}
+
+/* Custom DAG Node: Pipeline Node */
+.dag-node {
+  background: #FFFFFF;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 200px;
+  box-shadow: 0 1px 3px rgba(13, 27, 42, 0.05);
+  transition: border-color 0.15s ease;
+  cursor: pointer;
+  color: var(--foreground);
+}
+
+.dag-node:hover {
+  border-color: #D4AF37;
+  box-shadow: 0 2px 6px rgba(13, 27, 42, 0.08);
+}
+
+.dag-node.selected {
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35);
+}
+
+/* Node type variants (functional distinction preserved) */
+.dag-node--symbolic { border-left: 4px solid #D97706; }
+.dag-node--neural   { border-left: 4px solid #D4AF37; }
+.dag-node--output   { border-left: 4px solid #0D1B2A; }
+.dag-node--terminal { background: #0D1B2A; color: #F7F3E9; }
+
+/* AI node indicator (solid border, no infinite glow loop) */
+.dag-node--ai {
+  border-color: #D4AF37;
+}
+
+/* Custom Handles styling */
+.react-flow__handle {
+  background: #0D1B2A !important;
+  width: 10px !important;
+  height: 10px !important;
+  border: 2px solid #F7F3E9 !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 0 6px rgba(13, 27, 42, 0.2) !important;
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.3) !important;
+}
+
+/* Overrides for React Flow Edge Labels */
+.react-flow__edge-label {
+  background: rgba(247, 243, 233, 0.95) !important;
+  color: #0D1B2A !important;
+  font-size: 8px !important;
+  font-weight: 750 !important;
+  padding: 3px 6px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(65, 90, 119, 0.25) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 6px rgba(13, 27, 42, 0.06) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+.react-flow__edge-labelbg {
+  fill: transparent !important;
+}
