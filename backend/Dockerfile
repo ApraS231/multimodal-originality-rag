@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Salin berkas definisi dependensi
 COPY package.json bun.lock ./
 
-# Instalasi dependensi dengan frozen lockfile
-RUN bun install --frozen-lockfile
+# Instalasi dependensi
+RUN bun install
 
 # Salin konfigurasi dan skema Prisma terlebih dahulu untuk kompilasi client
 COPY prisma ./prisma

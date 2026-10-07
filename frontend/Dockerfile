@@ -8,8 +8,8 @@ WORKDIR /app
 # Salin berkas definisi dependensi
 COPY package.json bun.lock ./
 
-# Instalasi dependensi dengan frozen lockfile untuk reproduktibilitas
-RUN bun install --frozen-lockfile
+# Instalasi dependensi
+RUN bun install
 
 # Salin seluruh kode sumber frontend
 COPY . .
