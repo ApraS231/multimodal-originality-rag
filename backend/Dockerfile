@@ -1,7 +1,7 @@
 # =========================================================================
 # DOCKERFILE: Bun + ElysiaJS API Gateway (Production Ready)
 # =========================================================================
-FROM oven/bun:1.1-slim AS runner
+FROM oven/bun:1-slim AS runner
 
 WORKDIR /app
 

@@ -1,7 +1,7 @@
 # =========================================================================
 # STAGE 1: Build React SPA Bundle menggunakan Node 20 / Bun
 # =========================================================================
-FROM oven/bun:1.1-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
