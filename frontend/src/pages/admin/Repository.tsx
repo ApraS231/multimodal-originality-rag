@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { 
   useAllReports, 
   useDeleteReport, 
@@ -26,6 +27,8 @@ import {
 import { Card, StatCard } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { SegmentedControl } from '../../components/ui/grouped-list';
+import AcademicFileManager from '../../components/academic-file-manager';
+import type { NavItem } from '../../components/academic-file-manager';
 import { 
   FolderArchive, 
   Search, 
@@ -46,7 +49,8 @@ import {
   RefreshCw, 
   Layers, 
   HardDrive,
-  CloudUpload
+  CloudUpload,
+  LayoutGrid
 } from 'lucide-react';
 
 export default function AdminRepository() {
@@ -59,7 +63,20 @@ export default function AdminRepository() {
   const [selectedMatkul, setSelectedMatkul] = useState('ALL');
   const [selectedKelas, setSelectedKelas] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
-  const [viewMode, setViewMode] = useState<'table' | 'tree'>('table');
+  const [viewMode, setViewMode] = useState<'filemanager' | 'table' | 'tree'>('filemanager');
+
+  // Query Navigasi Direktori untuk File Manager
+  const { data: navData, isLoading: isNavLoading } = useQuery<NavItem[]>({
+    queryKey: ['aslabNav'],
+    queryFn: async () => {
+      const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
+      const res = await fetch(`${backendUrl}/api/reports/nav`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Gagal memuat direktori');
+      return res.json();
+    },
+  });
 
   // Multi-selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -281,7 +298,8 @@ export default function AdminRepository() {
 
           <SegmentedControl
             options={[
-              { value: 'table', label: 'Tabel', icon: <List className="w-3.5 h-3.5" /> },
+              { value: 'filemanager', label: 'File Manager', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+              { value: 'table', label: 'Tabel Sampel', icon: <List className="w-3.5 h-3.5" /> },
               { value: 'tree', label: 'Pohon Direktori', icon: <FolderTree className="w-3.5 h-3.5" /> },
             ]}
             value={viewMode}
@@ -418,8 +436,21 @@ export default function AdminRepository() {
         </div>
       )}
 
-      {/* 5. Konten Utama: Tabel / Pohon / Empty State Sederhana */}
-      {isLoading ? (
+      {/* 5. Konten Utama: File Manager / Tabel / Pohon */}
+      {viewMode === 'filemanager' ? (
+        <AcademicFileManager
+          role="ADMIN"
+          navData={navData}
+          isLoading={isNavLoading}
+          onSelectLaporan={(id) => {
+            const found = reports.find(r => r.id_laporan === id);
+            if (found) setPreviewReport(found);
+            else navigate(`/aslab/view/${id}`);
+          }}
+          title="File Manager Repositori Naskah"
+          subtitle="Manajemen penuh struktur folder akademik: buat folder, unggah naskah, ubah nama, palet warna, dan penghapusan."
+        />
+      ) : isLoading ? (
         <Card className="min-h-[260px] flex items-center justify-center">
           <LoadingSpinner message="Menyelaraskan direktori berkas laporan..." />
         </Card>
