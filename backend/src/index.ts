@@ -12,6 +12,10 @@ import { startQueue } from './lib/queue'
 import { registerAnalyzeWorker } from './workers/analyze'
 import { registerSeedingWorker } from './workers/seeding'
 
+import { join } from 'path'
+
+const FRONTEND_DIST = join(import.meta.dir, '../../frontend/dist');
+
 const app = new Elysia()
   .use(cors({
     origin: true,
@@ -32,7 +36,21 @@ const app = new Elysia()
   .use(reportsRouter)
   .use(seedingRouter)
   .use(chatbotRouter)
-  .get('/', () => ({ status: 'running', service: 'ElysiaJS Backend API Gateway' }))
+  .get('/api/health', () => ({ status: 'running', service: 'ElysiaJS Backend API Gateway' }))
+  .get('/*', async ({ params, set }) => {
+    const reqPath = (params as Record<string, string>)['*'] || '';
+    const filePath = join(FRONTEND_DIST, reqPath);
+    const file = Bun.file(filePath);
+    if (reqPath && await file.exists()) {
+      return file;
+    }
+    const indexHtml = Bun.file(join(FRONTEND_DIST, 'index.html'));
+    if (await indexHtml.exists()) {
+      set.headers['content-type'] = 'text/html; charset=utf-8';
+      return indexHtml;
+    }
+    return { status: 'running', service: 'ElysiaJS Backend API Gateway' };
+  })
   .listen(CONFIG.PORT)
 
 console.log(`🦊 Elysia Backend is running at ${app.server?.hostname}:${app.server?.port}`)
