@@ -475,7 +475,7 @@ export default function Chatbot({
               ) : !hasMessages ? (
                 /* State Kosong Bersih dengan Kartu Pemandu & Saran Cepat */
                 <div className="flex flex-col items-center justify-center py-5 px-3 text-center">
-                  <Logo size={36} variant="badge" className="mb-2.5" />
+                  <Logo size={42} className="mb-2.5" />
                   <h4 className="text-xs font-bold text-[#0D1B2A] tracking-tight">Veritas AI Copilot</h4>
                   <p className="text-[11px] text-slate-500 mt-1 max-w-[280px] leading-relaxed">
                     {idLaporan 

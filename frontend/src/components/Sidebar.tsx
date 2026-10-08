@@ -88,7 +88,7 @@ export default function Sidebar() {
     <aside className={`${isCollapsed ? 'w-16' : 'w-64'} sidebar-transition bg-white dark:bg-[#152238] border-r border-[#415A77]/20 flex flex-col h-screen flex-shrink-0 relative z-20 font-sans select-none`}>
       {/* Brand Section */}
       <div className="h-14 px-3.5 border-b border-[#415A77]/20 flex items-center gap-3 overflow-hidden shrink-0">
-        <Logo size={32} variant="badge" />
+        <Logo size={36} />
         {!isCollapsed && (
           <div className="flex flex-col min-w-0 animate-fade-in">
             <span className="text-sm font-bold tracking-tight text-[#0D1B2A] dark:text-[#F7F3E9] leading-none">VERITAS</span>

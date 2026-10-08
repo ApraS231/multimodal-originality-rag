@@ -217,7 +217,7 @@ export default function Welcome() {
         
         {/* Struktur Kiri: Brand Block */}
         <div className="flex items-center gap-3">
-          <Logo size={40} variant="badge" />
+          <Logo size={42} />
           <div className="hidden sm:flex flex-col text-left leading-tight">
             <span className="font-brutalism font-black text-xs text-[#0D1B2A] tracking-wider">VERITAS</span>
             <span className="text-[10px] font-mono text-[#415A77] font-semibold">STITEK BONTANG</span>

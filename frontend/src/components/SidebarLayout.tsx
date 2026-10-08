@@ -26,7 +26,7 @@ export default function SidebarLayout() {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Logo size={28} showText variant="badge" />
+          <Logo size={30} showText />
         </div>
       </div>
 

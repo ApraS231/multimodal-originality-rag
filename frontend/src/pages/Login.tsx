@@ -266,7 +266,7 @@ export default function Login() {
             {/* Header Brand Terpadu */}
             <div className="text-center space-y-2">
               <div className="flex items-center justify-center gap-3">
-                <Logo size={42} variant="badge" />
+                <Logo size={46} />
                 <div className="flex flex-col text-left leading-tight">
                   <span className="text-base font-brutalism font-black tracking-tight text-[#0D1B2A] uppercase">VERITAS</span>
                   <span className="text-[10px] font-semibold text-[#415A77] uppercase tracking-wider font-mono">STITEK BONTANG</span>

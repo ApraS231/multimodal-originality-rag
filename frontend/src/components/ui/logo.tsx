@@ -2,7 +2,7 @@ import React from 'react';
 
 export interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | number;
-  variant?: 'badge' | 'transparent' | 'brass' | 'white' | 'raw';
+  variant?: 'transparent' | 'brass' | 'white' | 'badge';
   showText?: boolean;
   subtitle?: string;
   className?: string;
@@ -15,12 +15,12 @@ const sizeMap = {
   md: 34,
   lg: 42,
   xl: 52,
-  '2xl': 68,
+  '2xl': 64,
 };
 
 export const Logo: React.FC<LogoProps> = ({
   size = 'md',
-  variant = 'badge',
+  variant = 'transparent',
   showText = false,
   subtitle = 'STITEK BONTANG',
   className = '',
@@ -28,45 +28,30 @@ export const Logo: React.FC<LogoProps> = ({
 }) => {
   const pixelSize = typeof size === 'number' ? size : sizeMap[size] || 34;
 
-  let imageSrc = '/logo.png';
-  if (variant === 'transparent') imageSrc = '/logo-transparent.png';
-  else if (variant === 'brass') imageSrc = '/logo-brass.png';
+  let imageSrc = '/logo-transparent.png';
+  if (variant === 'brass') imageSrc = '/logo-brass.png';
   else if (variant === 'white') imageSrc = '/logo-white.png';
 
-  const renderImage = () => {
-    if (variant === 'badge') {
-      return (
-        <div 
-          className={`relative rounded-md overflow-hidden bg-[#F7F3E9] border-2 border-[#0D1B2A] shadow-[2px_2px_0px_#D4AF37] flex items-center justify-center shrink-0 select-none ${imageClassName}`}
-          style={{ width: `${pixelSize}px`, height: `${pixelSize}px` }}
-        >
-          <img
-            src="/logo.png"
-            alt="Veritas Logo"
-            className="w-full h-full object-cover p-0.5"
-            loading="eager"
-          />
-        </div>
-      );
-    }
-
-    return (
-      <img
-        src={imageSrc}
-        alt="Veritas Logo"
-        className={`shrink-0 select-none object-contain ${imageClassName}`}
-        style={{ width: `${pixelSize}px`, height: `${pixelSize}px` }}
-        loading="eager"
-      />
-    );
-  };
+  const renderImage = () => (
+    <img
+      src={imageSrc}
+      alt="Logo Veritas STITEK Bontang"
+      className={`shrink-0 select-none object-contain block bg-transparent border-0 shadow-none ${imageClassName}`}
+      style={{ width: `${pixelSize}px`, height: `${pixelSize}px` }}
+      loading="eager"
+    />
+  );
 
   if (!showText) {
-    return <div className={`inline-flex items-center ${className}`}>{renderImage()}</div>;
+    return (
+      <div className={`inline-flex items-center justify-center bg-transparent border-0 p-0 m-0 ${className}`}>
+        {renderImage()}
+      </div>
+    );
   }
 
   return (
-    <div className={`inline-flex items-center gap-2.5 ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 bg-transparent border-0 ${className}`}>
       {renderImage()}
       <div className="flex flex-col text-left leading-tight select-none">
         <span className="font-brutalism font-black tracking-tight text-[#0D1B2A] dark:text-[#F7F3E9] text-sm uppercase">
