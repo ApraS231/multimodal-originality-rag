@@ -38,6 +38,38 @@ interface ChatbotProps {
   subtitle?: string;
 }
 
+interface MochiPosition {
+  x: number;
+  y: number;
+  edge: 'left' | 'right';
+}
+
+const MOCHI_SIZE = 120;
+const MOCHI_STORAGE_KEY = 'veritas_mochi_position';
+
+const getInitialMochiPosition = (): MochiPosition => {
+  if (typeof window === 'undefined') return { x: 0, y: 0, edge: 'right' };
+  try {
+    const saved = localStorage.getItem(MOCHI_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const isLeft = parsed.edge === 'left';
+      const snapX = isLeft ? 16 : Math.max(16, window.innerWidth - MOCHI_SIZE - 16);
+      const targetY = typeof parsed.yRatio === 'number' 
+        ? Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - 20, parsed.yRatio * window.innerHeight))
+        : Math.max(70, window.innerHeight - MOCHI_SIZE - 24);
+      return { x: snapX, y: targetY, edge: isLeft ? 'left' : 'right' };
+    }
+  } catch {
+    // fallback
+  }
+  return {
+    x: Math.max(16, window.innerWidth - MOCHI_SIZE - 16),
+    y: Math.max(70, window.innerHeight - MOCHI_SIZE - 24),
+    edge: 'right'
+  };
+};
+
 export default function Chatbot({ 
   idLaporan = null, 
   namaMahasiswa = 'Pengguna', 
@@ -54,6 +86,98 @@ export default function Chatbot({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // State Posisi Mochi (Drag ke mana saja + Stick to Edge)
+  const [mochiPos, setMochiPos] = useState<MochiPosition>(getInitialMochiPosition);
+  const [isDraggingMochi, setIsDraggingMochi] = useState(false);
+  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number; moved: boolean } | null>(null);
+
+  // Resize listener agar Mochi selalu menempel di tepi layar saat window berubah
+  useEffect(() => {
+    const handleResize = () => {
+      setMochiPos(prev => {
+        const isLeft = prev.edge === 'left';
+        const newX = isLeft ? 16 : Math.max(16, window.innerWidth - MOCHI_SIZE - 16);
+        const newY = Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - 20, prev.y));
+        return { x: newX, y: newY, edge: prev.edge };
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleMochiPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // noop
+    }
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: mochiPos.x,
+      initialY: mochiPos.y,
+      moved: false,
+    };
+    setIsDraggingMochi(true);
+  };
+
+  const handleMochiPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
+    const dx = e.clientX - dragStartRef.current.startX;
+    const dy = e.clientY - dragStartRef.current.startY;
+
+    if (!dragStartRef.current.moved && Math.hypot(dx, dy) > 6) {
+      dragStartRef.current.moved = true;
+    }
+
+    if (dragStartRef.current.moved) {
+      const nextX = Math.max(0, Math.min(window.innerWidth - MOCHI_SIZE, dragStartRef.current.initialX + dx));
+      const nextY = Math.max(50, Math.min(window.innerHeight - MOCHI_SIZE - 10, dragStartRef.current.initialY + dy));
+      setMochiPos(prev => ({ ...prev, x: nextX, y: nextY }));
+    }
+  };
+
+  const handleMochiPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // noop
+    }
+
+    const hadMoved = dragStartRef.current.moved;
+    dragStartRef.current = null;
+    setIsDraggingMochi(false);
+
+    if (hadMoved) {
+      // STICK TO EDGE LOGIC: Menempel ke tepi terdekat
+      const centerX = mochiPos.x + MOCHI_SIZE / 2;
+      const isLeft = centerX < window.innerWidth / 2;
+      const targetX = isLeft ? 16 : Math.max(16, window.innerWidth - MOCHI_SIZE - 16);
+      const targetY = Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - 20, mochiPos.y));
+
+      const finalPos: MochiPosition = {
+        x: targetX,
+        y: targetY,
+        edge: isLeft ? 'left' : 'right'
+      };
+      setMochiPos(finalPos);
+
+      try {
+        localStorage.setItem(MOCHI_STORAGE_KEY, JSON.stringify({
+          edge: finalPos.edge,
+          yRatio: targetY / window.innerHeight
+        }));
+      } catch {
+        // noop
+      }
+    } else {
+      // Klik biasa: Buka atau tutup obrolan
+      setIsOpen(prev => !prev);
+    }
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
@@ -306,11 +430,13 @@ export default function Chatbot({
 
   return (
     <>
-      {/* 1. ROOM CHAT PANEL (Responsif di mobile dengan margin simetris di atas bottom bar) */}
+      {/* 1. ROOM CHAT PANEL (Otomatis menyesuaikan orientasi terhadap posisi tepi Mochi) */}
       {isOpen && (
         <div 
-          className={`fixed bottom-[74px] lg:bottom-[165px] z-[70] left-3 right-3 sm:left-auto sm:right-5 sm:w-[410px] h-[min(520px,calc(100vh-160px))] max-h-[calc(100vh-160px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
-            isSideDrawerOpen ? 'md:right-[464px] max-md:hidden' : ''
+          className={`fixed z-[70] bottom-4 left-3 right-3 sm:inset-auto sm:bottom-5 ${
+            mochiPos.edge === 'left' ? 'sm:left-5' : 'sm:right-5'
+          } sm:w-[410px] h-[min(530px,calc(100vh-100px))] max-h-[calc(100vh-100px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
+            isSideDrawerOpen && mochiPos.edge === 'right' ? 'md:right-[464px] max-md:hidden' : ''
           }`}
           role="dialog"
           aria-label="Ruang Percakapan Veritas Copilot"
@@ -656,14 +782,17 @@ export default function Chatbot({
         </div>
       )}
 
-      {/* 2. BUBBLE CHAT CTA DENGAN 3 DOT MINIMALIS ELEGAN (Tampil tepat di atas maskot saat obrolan tertutup) */}
-      {!isOpen && (
+      {/* 2. BUBBLE CHAT CTA DENGAN 3 DOT MINIMALIS ELEGAN (Mengikuti posisi Mochi ke mana pun digeser) */}
+      {!isOpen && !isDraggingMochi && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-[195px] lg:bottom-[165px] z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in slide-in-from-bottom-1 ${
-            isSideDrawerOpen ? 'right-3 sm:right-5 md:right-[464px] max-md:hidden' : 'right-3 sm:right-5'
-          }`}
+          style={{
+            left: `${Math.max(12, Math.min(window.innerWidth - 170, mochiPos.x + (MOCHI_SIZE / 2) - 75))}px`,
+            top: `${Math.max(16, mochiPos.y - 44)}px`,
+            transition: 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)',
+          }}
+          className="fixed z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in"
           title="Buka ruang percakapan dengan Veritas AI"
         >
           {/* 3 Dot Indikator Pesan Minimalis Bernapas */}
@@ -676,17 +805,35 @@ export default function Chatbot({
         </button>
       )}
 
-      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DIPOSISIKAN TEPAT DI ATAS BILAH NAVIGASI MOBILE) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DRAGGABLE KE MANA SAJA + STICK TO EDGE) */}
       <div 
-        className={`fixed bottom-[74px] lg:bottom-6 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
-          isSideDrawerOpen ? 'right-2 sm:right-5 md:right-[464px] max-md:hidden' : 'right-2 sm:right-5'
-        }`}
-        title={isOpen ? "Klik maskot untuk menutup obrolan" : "Klik maskot untuk membuka obrolan"}
+        onPointerDown={handleMochiPointerDown}
+        onPointerMove={handleMochiPointerMove}
+        onPointerUp={handleMochiPointerUp}
+        onPointerCancel={() => {
+          dragStartRef.current = null;
+          setIsDraggingMochi(false);
+        }}
+        style={{
+          left: `${mochiPos.x}px`,
+          top: `${mochiPos.y}px`,
+          touchAction: 'none',
+          transition: isDraggingMochi 
+            ? 'none' 
+            : 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), transform 0.2s',
+          cursor: isDraggingMochi ? 'grabbing' : 'grab',
+        }}
+        className={`fixed z-[70] select-none filter drop-shadow-xl ${
+          isDraggingMochi ? 'scale-105' : 'hover:scale-102 active:scale-95'
+        } ${isSideDrawerOpen && mochiPos.edge === 'right' ? 'md:right-[464px] max-md:hidden' : ''}`}
+        title={isDraggingMochi ? "Tarik dan lepas untuk menempel ke tepi" : (isOpen ? "Klik maskot untuk menutup obrolan" : "Tarik bebas atau klik untuk membuka obrolan")}
       >
         <CoucouMochi
-          size={120}
+          size={MOCHI_SIZE}
           label="Maskot Mochi Veritas AI STITEK Bontang"
-          onClick={() => setIsOpen(prev => !prev)}
+          onClick={() => {
+            // Ditangani secara halus melalui pointer up agar tidak bentrok dengan drag
+          }}
           status={mochiStatus}
         />
 
