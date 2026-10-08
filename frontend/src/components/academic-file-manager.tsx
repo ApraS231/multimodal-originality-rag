@@ -151,6 +151,111 @@ function MinimalistFileGraphic({ score }: { score?: number }) {
   );
 }
 
+export interface BreadcrumbCrumb {
+  id: string;
+  name: string;
+  type: 'root' | 'prodi' | 'matkul' | 'kelas';
+}
+
+export interface FlattenedNavItem extends NavItem {
+  parentTrail?: BreadcrumbCrumb[];
+  parentLabel?: string;
+}
+
+// 1. Helper rekursif: kumpulkan seluruh item bertipe tertentu dari subtree
+function collectItemsByType(
+  nodes: NavItem[],
+  targetType: 'prodi' | 'matkul' | 'kelas' | 'laporan',
+  currentTrail: BreadcrumbCrumb[] = [{ id: 'root', name: 'Direktori Utama', type: 'root' }]
+): FlattenedNavItem[] {
+  let result: FlattenedNavItem[] = [];
+
+  for (const node of nodes) {
+    const nodeTrail: BreadcrumbCrumb[] = [
+      ...currentTrail,
+      { id: node.id, name: node.name, type: node.type as BreadcrumbCrumb['type'] }
+    ];
+
+    if (node.type === targetType) {
+      const parentLabelParts = currentTrail.slice(1).map(c => c.name);
+      const parentLabel = parentLabelParts.length > 0 ? parentLabelParts.join(' / ') : undefined;
+
+      result.push({
+        ...node,
+        parentTrail: nodeTrail,
+        parentLabel
+      });
+    }
+
+    if (node.children && node.children.length > 0) {
+      result = result.concat(collectItemsByType(node.children, targetType, nodeTrail));
+    }
+  }
+
+  return result;
+}
+
+// 2. Helper rekursif: temukan jejak navigasi lengkap dari root ke target ID
+function findNodeTrail(
+  nodes: NavItem[],
+  targetId: string,
+  currentTrail: BreadcrumbCrumb[] = [{ id: 'root', name: 'Direktori Utama', type: 'root' }]
+): BreadcrumbCrumb[] | null {
+  for (const node of nodes) {
+    const nodeTrail: BreadcrumbCrumb[] = [
+      ...currentTrail,
+      { id: node.id, name: node.name, type: node.type as BreadcrumbCrumb['type'] }
+    ];
+
+    if (node.id === targetId) {
+      return nodeTrail;
+    }
+
+    if (node.children && node.children.length > 0) {
+      const found = findNodeTrail(node.children, targetId, nodeTrail);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// 3. Helper rekursif: pencarian global di seluruh pohon direktori
+function searchItemsGlobally(
+  nodes: NavItem[],
+  query: string,
+  currentTrail: BreadcrumbCrumb[] = [{ id: 'root', name: 'Direktori Utama', type: 'root' }]
+): FlattenedNavItem[] {
+  const q = query.toLowerCase().trim();
+  let result: FlattenedNavItem[] = [];
+
+  for (const node of nodes) {
+    const nodeTrail: BreadcrumbCrumb[] = [
+      ...currentTrail,
+      { id: node.id, name: node.name, type: node.type as BreadcrumbCrumb['type'] }
+    ];
+
+    const matchName = node.name.toLowerCase().includes(q);
+    const matchNim = node.nim?.toLowerCase().includes(q);
+
+    if (matchName || matchNim) {
+      const parentLabelParts = currentTrail.slice(1).map(c => c.name);
+      const parentLabel = parentLabelParts.length > 0 ? parentLabelParts.join(' / ') : undefined;
+
+      result.push({
+        ...node,
+        parentTrail: nodeTrail,
+        parentLabel
+      });
+    }
+
+    if (node.children && node.children.length > 0) {
+      result = result.concat(searchItemsGlobally(node.children, query, nodeTrail));
+    }
+  }
+
+  return result;
+}
+
 export default function AcademicFileManager({
   role,
   navData = [],
@@ -165,7 +270,7 @@ export default function AcademicFileManager({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Breadcrumbs Trail
-  const [currentPath, setCurrentPath] = useState<{ id: string; name: string; type: 'root' | 'prodi' | 'matkul' | 'kelas' }[]>([
+  const [currentPath, setCurrentPath] = useState<BreadcrumbCrumb[]>([
     { id: 'root', name: 'Direktori Utama', type: 'root' }
   ]);
 
@@ -264,30 +369,62 @@ export default function AcademicFileManager({
     return foundNode;
   }, [currentPath, navData]);
 
+  // Kategori Counts (Dihitung di seluruh direktori untuk lencana kuantitas)
+  const categoryCounts = useMemo(() => {
+    const prodis = collectItemsByType(navData, 'prodi');
+    const matkuls = collectItemsByType(navData, 'matkul');
+    const kelas = collectItemsByType(navData, 'kelas');
+    const reports = collectItemsByType(navData, 'laporan');
+
+    return {
+      prodi: prodis.length,
+      matkul: matkuls.length,
+      kelas: kelas.length,
+      laporan: reports.length,
+      all: currentPath.length === 1 ? navData.length : (currentNode?.children?.length || 0)
+    };
+  }, [navData, currentPath.length, currentNode]);
+
   // Displayed items in current folder view
-  const displayedItems = useMemo(() => {
-    let rawItems: NavItem[] = [];
-
-    if (currentPath.length === 1) {
-      rawItems = navData;
-    } else if (currentNode && currentNode.children) {
-      rawItems = currentNode.children;
-    }
-
-    if (activeCategory !== 'ALL') {
-      rawItems = rawItems.filter(item => item.type === activeCategory);
-    }
-
+  const displayedItems = useMemo<FlattenedNavItem[]>(() => {
+    // 1. Jika ada kata kunci pencarian -> Pencarian Rekursif Global di seluruh sistem
     if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      rawItems = rawItems.filter(item => {
-        const matchName = item.name.toLowerCase().includes(q);
-        const matchNim = item.nim?.toLowerCase().includes(q);
-        return matchName || matchNim;
-      });
+      let results = searchItemsGlobally(navData, searchTerm);
+      if (activeCategory !== 'ALL') {
+        results = results.filter(item => item.type === activeCategory);
+      }
+      return results;
     }
 
-    return rawItems;
+    // 2. Jika filter kategori aktif spesifik (Smart Category Flattening)
+    if (activeCategory !== 'ALL') {
+      const baseNodes = currentPath.length === 1 
+        ? navData 
+        : (currentNode?.children || []);
+
+      return collectItemsByType(baseNodes, activeCategory, currentPath);
+    }
+
+    // 3. Jika 'ALL' -> Navigasi Hirarkis Standar
+    if (currentPath.length === 1) {
+      return navData.map(item => ({
+        ...item,
+        parentTrail: [
+          { id: 'root', name: 'Direktori Utama', type: 'root' },
+          { id: item.id, name: item.name, type: item.type as BreadcrumbCrumb['type'] }
+        ]
+      }));
+    } else if (currentNode && currentNode.children) {
+      return currentNode.children.map(item => ({
+        ...item,
+        parentTrail: [
+          ...currentPath,
+          { id: item.id, name: item.name, type: item.type as BreadcrumbCrumb['type'] }
+        ]
+      }));
+    }
+
+    return [];
   }, [currentPath, currentNode, navData, activeCategory, searchTerm]);
 
   const countFilesInNode = (node: NavItem): number => {
@@ -302,13 +439,25 @@ export default function AcademicFileManager({
     return palette[idx % palette.length];
   };
 
-  const handleOpenFolder = (item: NavItem) => {
+  const handleOpenFolder = (item: FlattenedNavItem) => {
     if (item.type === 'laporan') {
       if (onSelectLaporan) onSelectLaporan(item.id);
       else navigate(`/aslab/view/${item.id}`);
       return;
     }
-    setCurrentPath(prev => [...prev, { id: item.id, name: item.name, type: item.type }]);
+
+    // Jika item memiliki jejak breadcrumbs lengkap (dari flattening atau pencarian)
+    if (item.parentTrail && item.parentTrail.length > 0) {
+      setCurrentPath(item.parentTrail);
+    } else {
+      const fullTrail = findNodeTrail(navData, item.id);
+      if (fullTrail) {
+        setCurrentPath(fullTrail);
+      } else {
+        setCurrentPath(prev => [...prev, { id: item.id, name: item.name, type: item.type as BreadcrumbCrumb['type'] }]);
+      }
+    }
+    setActiveCategory('ALL');
     setSearchTerm('');
     setActiveMenuId(null);
   };
@@ -316,12 +465,14 @@ export default function AcademicFileManager({
   const handleGoBack = () => {
     if (currentPath.length > 1) {
       setCurrentPath(prev => prev.slice(0, prev.length - 1));
+      setActiveCategory('ALL');
       setActiveMenuId(null);
     }
   };
 
   const handleNavigatePathIndex = (index: number) => {
     setCurrentPath(prev => prev.slice(0, index + 1));
+    setActiveCategory('ALL');
     setActiveMenuId(null);
   };
 
@@ -439,7 +590,7 @@ export default function AcademicFileManager({
                     type="button"
                     onClick={() => handleNavigatePathIndex(idx)}
                     className={`px-2 py-1 rounded hover:bg-slate-100 transition-colors cursor-pointer truncate max-w-[170px] ${
-                      idx === currentPath.length - 1 
+                      idx === currentPath.length - 1 && activeCategory === 'ALL' && !searchTerm
                         ? 'font-bold text-[#0D1B2A] bg-slate-100 text-xs' 
                         : 'text-slate-500 hover:text-slate-800 text-xs'
                     }`}
@@ -448,6 +599,44 @@ export default function AcademicFileManager({
                   </button>
                 </React.Fragment>
               ))}
+
+              {activeCategory !== 'ALL' && (
+                <>
+                  <span className="text-slate-300 font-mono">/</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/90 text-amber-900 font-medium text-xs shadow-2xs">
+                    <span>
+                      {activeCategory === 'prodi' ? 'Semua Prodi' :
+                       activeCategory === 'matkul' ? 'Semua Mata Kuliah' :
+                       activeCategory === 'kelas' ? 'Semua Kelas' : 'Semua Laporan'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveCategory('ALL')}
+                      className="hover:text-amber-950 p-0.5 cursor-pointer ml-0.5"
+                      title="Kembali ke direktori normal"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                </>
+              )}
+
+              {searchTerm.trim() && (
+                <>
+                  <span className="text-slate-300 font-mono">/</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200/90 text-sky-900 font-medium text-xs shadow-2xs">
+                    <span>Cari: "{searchTerm}"</span>
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      className="hover:text-sky-950 p-0.5 cursor-pointer ml-0.5"
+                      title="Hapus pencarian"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                </>
+              )}
             </div>
 
             <span className="text-[11px] font-mono text-slate-400 ml-1">
@@ -481,10 +670,10 @@ export default function AcademicFileManager({
             )}
 
             {/* Kotak Pencarian Minimalis */}
-            <div className="relative w-full sm:w-56">
+            <div className="relative w-full sm:w-60">
               <Input
                 type="text"
-                placeholder="Cari naskah / NIM..."
+                placeholder="Cari naskah / NIM / matkul..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="h-8 text-xs pl-7 pr-3 bg-slate-50/70 border-slate-200 rounded-lg focus:border-[#D4AF37] focus:bg-white transition-all font-sans"
@@ -494,7 +683,7 @@ export default function AcademicFileManager({
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -531,32 +720,48 @@ export default function AcademicFileManager({
           </div>
         </div>
 
-        {/* Baris 2: Tab Filter Kategori Ringkas */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 overflow-x-auto text-[11px]">
+        {/* Baris 2: Tab Filter Kategori Ringkas dengan Counter Badge */}
+        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 overflow-x-auto text-[11px] no-scrollbar">
           {(['ALL', 'prodi', 'matkul', 'kelas', 'laporan'] as const).map((cat) => {
-            const labels = {
-              ALL: 'Semua',
-              prodi: 'Prodi',
-              matkul: 'Mata Kuliah',
-              kelas: 'Kelas',
-              laporan: 'Naskah Laporan'
-            };
+            const config = {
+              ALL: { label: 'Semua', count: categoryCounts.all },
+              prodi: { label: 'Prodi', count: categoryCounts.prodi },
+              matkul: { label: 'Mata Kuliah', count: categoryCounts.matkul },
+              kelas: { label: 'Kelas', count: categoryCounts.kelas },
+              laporan: { label: 'Naskah Laporan', count: categoryCounts.laporan }
+            }[cat];
+
             const isActive = activeCategory === cat;
             return (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setActiveCategory(cat)}
-                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
+                className={`group px-3 py-1.5 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 ${
                   isActive
-                    ? 'bg-slate-900 text-white font-semibold shadow-2xs'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-[#0D1B2A] text-white font-semibold shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium'
                 }`}
               >
-                {labels[cat]}
+                <span>{config.label}</span>
+                <span
+                  className={`text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded-full transition-colors ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700'
+                  }`}
+                >
+                  {config.count}
+                </span>
               </button>
             );
           })}
+
+          {activeCategory !== 'ALL' && (
+            <span className="text-[10px] text-slate-400 font-sans ml-auto hidden md:inline-block pr-1">
+              Menampilkan seluruh entitas ({activeCategory === 'matkul' ? 'mata kuliah' : activeCategory})
+            </span>
+          )}
         </div>
       </div>
 
@@ -566,18 +771,56 @@ export default function AcademicFileManager({
           <LoadingSpinner variant="section" message="Menyelaraskan direktori file manager..." />
         </div>
       ) : displayedItems.length === 0 ? (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-12 shadow-xs">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-12 shadow-xs text-center space-y-4">
           <EmptyState
             icon={Folder}
-            title={searchTerm ? 'Tidak Ada Berkas yang Cocok' : 'Direktori Masih Kosong'}
+            title={
+              searchTerm
+                ? 'Tidak Ada Berkas yang Cocok'
+                : activeCategory !== 'ALL'
+                ? `Belum Ada ${activeCategory === 'matkul' ? 'Mata Kuliah' : activeCategory === 'kelas' ? 'Kelas' : activeCategory === 'prodi' ? 'Prodi' : 'Naskah Laporan'}`
+                : 'Direktori Masih Kosong'
+            }
             description={
               searchTerm
-                ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}".`
+                ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}". Silakan periksa kembali ejaan atau NIM.`
+                : activeCategory !== 'ALL'
+                ? `Tidak ditemukan berkas dalam kategori ini pada lokasi yang dipilih.`
                 : 'Belum ada berkas atau subfolder pada lokasi ini.'
             }
-            actionLabel={isAdmin ? '+ Tambah Folder Baru' : undefined}
-            onAction={isAdmin ? () => setIsNewFolderModalOpen(true) : undefined}
+            actionLabel={
+              searchTerm
+                ? 'Hapus Pencarian'
+                : activeCategory !== 'ALL'
+                ? 'Tampilkan Semua Berkas'
+                : currentPath.length > 1
+                ? 'Kembali ke Direktori Utama'
+                : isAdmin ? '+ Tambah Folder Baru' : undefined
+            }
+            onAction={
+              searchTerm
+                ? () => setSearchTerm('')
+                : activeCategory !== 'ALL'
+                ? () => setActiveCategory('ALL')
+                : currentPath.length > 1
+                ? () => setCurrentPath([{ id: 'root', name: 'Direktori Utama', type: 'root' }])
+                : isAdmin ? () => setIsNewFolderModalOpen(true) : undefined
+            }
           />
+
+          {currentPath.length > 1 && !searchTerm && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGoBack}
+                className="text-xs gap-1 border-slate-300"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Folder Sebelumnya</span>
+              </Button>
+            </div>
+          )}
         </div>
       ) : viewMode === 'grid' ? (
         /* ================= GRID VIEW MINIMALIS ================= */
@@ -764,6 +1007,14 @@ export default function AcademicFileManager({
                       >
                         {item.name}
                       </h3>
+                      {item.parentLabel && (
+                        <span 
+                          className="inline-block text-[9px] font-medium text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 mt-0.5 truncate max-w-full"
+                          title={item.parentLabel}
+                        >
+                          {item.parentLabel}
+                        </span>
+                      )}
                       <p className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">
                         {isFolder 
                           ? `${fileCount} berkas` 
@@ -882,24 +1133,31 @@ export default function AcademicFileManager({
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                              {item.name}
-                            </span>
-                            {isFolder && (
-                              <span className="text-slate-400 font-mono text-[11px]">
-                                ({fileCount} berkas)
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                                {item.name}
                               </span>
-                            )}
-                            {item.skor_orisinalitas !== undefined && (
-                              <span 
-                                className={`text-[9.5px] font-mono font-bold px-1.5 py-0.2 rounded-full border ${
-                                  item.skor_orisinalitas >= 75 
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                    : 'bg-rose-50 text-rose-700 border-rose-200'
-                                }`}
-                              >
-                                {item.skor_orisinalitas.toFixed(0)}%
+                              {isFolder && (
+                                <span className="text-slate-400 font-mono text-[11px]">
+                                  ({fileCount} berkas)
+                                </span>
+                              )}
+                              {item.skor_orisinalitas !== undefined && (
+                                <span 
+                                  className={`text-[9.5px] font-mono font-bold px-1.5 py-0.2 rounded-full border ${
+                                    item.skor_orisinalitas >= 75 
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                                  }`}
+                                >
+                                  {item.skor_orisinalitas.toFixed(0)}%
+                                </span>
+                              )}
+                            </div>
+                            {item.parentLabel && (
+                              <span className="text-[10px] text-slate-400 truncate max-w-sm mt-0.5">
+                                {item.parentLabel}
                               </span>
                             )}
                           </div>
