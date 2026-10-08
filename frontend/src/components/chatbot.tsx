@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, ShieldCheck, RotateCcw, Minimize2, History, Trash2, Plus, MessageSquare, ChevronLeft } from 'lucide-react';
 import { Mascot } from 'page-mascot';
+import { CoucouMochi } from './coucou-mochi';
 import MarkdownView from './ui/markdown-view';
 import { useSession } from '../api/auth';
 import { Logo } from './ui/logo';
@@ -668,19 +669,17 @@ export default function Chatbot({
         </button>
       )}
 
-      {/* 3. MASKOT MOCHI INTERAKTIF (UKURAN 135px, OTOMATIS BERGESER RAMPING SAAT DRAWER TERBUKA) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (UKURAN 135px, OTOMATIS BERGESER RAMPING SAAT DRAWER TERBUKA) */}
       <div 
         className={`fixed bottom-3 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
           isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
         }`}
-        onClick={() => setIsOpen(prev => !prev)}
         title={isOpen ? "Klik maskot untuk menutup obrolan" : "Klik maskot untuk membuka obrolan"}
       >
-        <Mascot
-          directions="/mascots/mochi-directions.webp"
-          reactions="/mascots/mochi-reactions.webp"
+        <CoucouMochi
           size={135}
           label="Maskot Mochi Veritas AI STITEK Bontang"
+          onClick={() => setIsOpen(prev => !prev)}
         />
 
         {/* Titik Indikator Status Online AI */}

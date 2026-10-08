@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CoucouMochi } from './coucou-mochi';
 import { Mascot } from 'page-mascot';
 
 interface MascotAvatarProps {
@@ -10,6 +11,7 @@ interface MascotAvatarProps {
   label?: string;
   directionsUrl?: string;
   reactionsUrl?: string;
+  useSmoothCanvas?: boolean;
 }
 
 export function MascotAvatar({
@@ -21,6 +23,7 @@ export function MascotAvatar({
   label = 'Veritas Mascot AI',
   directionsUrl = '/mascots/mochi-directions.webp',
   reactionsUrl = '/mascots/mochi-reactions.webp',
+  useSmoothCanvas = true,
 }: MascotAvatarProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -46,7 +49,7 @@ export function MascotAvatar({
       {/* Balon sapaan interaktif saat kursor mendekat atau diarahkan */}
       {speechText && (
         <div
-          className={`absolute -top-9 z-20 pointer-events-none transition-all duration-200 transform ${
+          className={`absolute -top-9 z-20 pointer-events-none transition-all duration-300 transform ${
             isHovered
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-95 -translate-y-0.5 scale-95'
@@ -61,14 +64,22 @@ export function MascotAvatar({
         </div>
       )}
 
-      {/* Komponen Maskot Interaktif dengan pelacakan kursor */}
-      <div className="relative group cursor-pointer transition-transform duration-150 active:scale-95 filter drop-shadow-md hover:drop-shadow-lg">
-        <Mascot
-          directions={directionsUrl}
-          reactions={reactionsUrl}
-          size={size}
-          label={label}
-        />
+      {/* Komponen Maskot Interaktif dengan animasi mulus 60 FPS */}
+      <div className="relative group cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-md hover:drop-shadow-xl">
+        {useSmoothCanvas ? (
+          <CoucouMochi
+            size={size}
+            label={label}
+            onClick={onClick}
+          />
+        ) : (
+          <Mascot
+            directions={directionsUrl}
+            reactions={reactionsUrl}
+            size={size}
+            label={label}
+          />
+        )}
 
         {/* Indikator Status Online AI */}
         {showStatusDot && (

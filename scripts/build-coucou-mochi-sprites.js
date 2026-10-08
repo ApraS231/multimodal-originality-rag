@@ -305,20 +305,35 @@ function buildReactionsSheet() {
   const ctx = canvas.getContext('2d');
   const cellSize = 360;
 
-  // 3x3 Grid: 9 Reactions for Click / Boop Sequence
+  // Exact page-mascot REACTIONS array mapping:
+  // 0: 'blink'
+  // 1: 'heart'
+  // 2: 'sparkle'
+  // 3: 'surprised'
+  // 4: 'wink'
+  // 5: 'bashful'
+  // 6: 'sleepy'
+  // 7: 'dizzy'
+  // 8: 'delighted'
   const reactions = [
-    // Row 0
-    { eye: 'dot',    oy: -0.14, sy: 1.1,  sx: 0.94, blush: 0.4,  particle: 'spark' }, // Frame 0: Surprised / Pop!
-    { eye: 'closed', oy: 0.12,  sy: 0.8,  sx: 1.2,  blush: 0.55 },                     // Frame 1: Squash boop!
-    { eye: 'wink',   tilt: 0.14, yaw: 0.18, blush: 0.52 },                             // Frame 2: Playful Wink!
-    // Row 1
-    { eye: 'happy',  oy: -0.08, sy: 1.05, blush: 0.6,   particle: 'spark' },          // Frame 3: Joyous bounce smile!
-    { eye: 'heart',  particle: 'heart', oy: -0.05, blush: 0.7 },                      // Frame 4: Love Emote!
-    { eye: 'star',   particle: 'star',  tilt: -0.12, blush: 0.48 },                    // Frame 5: Proud / Star Emote!
-    // Row 2
-    { eye: 'spiral', tilt: 0.18, blush: 0.5 },                                        // Frame 6: Dizzy / cute tilt!
-    { eye: 'pill',   open: 0.15, yaw: -0.12, blush: 0.45 },                           // Frame 7: Soft sleepy blink
-    { eye: 'happy',  blush: 0.48 }                                                    // Frame 8: Sweet contented smile
+    // 0: 'blink' (boop squash with closed eyes)
+    { eye: 'closed', oy: 0.1,  sy: 0.85, sx: 1.15, blush: 0.5 },
+    // 1: 'heart' (love emote)
+    { eye: 'heart',  particle: 'heart', oy: -0.05, blush: 0.7 },
+    // 2: 'sparkle' (twinkling star emote)
+    { eye: 'star',   particle: 'star',  tilt: -0.1, blush: 0.48 },
+    // 3: 'surprised' (pop surprised emote)
+    { eye: 'dot',    oy: -0.14, sy: 1.1,  sx: 0.94, blush: 0.4, particle: 'spark' },
+    // 4: 'wink' (playful wink with tilt)
+    { eye: 'wink',   tilt: 0.14, yaw: 0.18, blush: 0.52 },
+    // 5: 'bashful' (sweet shy smile)
+    { eye: 'happy',  blush: 0.75, oy: 0.04, tilt: -0.08 },
+    // 6: 'sleepy' (sleepy relaxed eyes)
+    { eye: 'pill',   open: 0.18, yaw: -0.12, blush: 0.35 },
+    // 7: 'dizzy' (spiral eyes dizzy reaction)
+    { eye: 'spiral', tilt: 0.2, blush: 0.5 },
+    // 8: 'delighted' (joyful beaming smile)
+    { eye: 'happy',  oy: -0.08, sy: 1.06, blush: 0.6, particle: 'spark' }
   ];
 
   for (let i = 0; i < 9; i++) {
