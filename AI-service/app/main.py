@@ -41,13 +41,8 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Gagal terhubung ke Supabase pgvector: {str(e)}")
         
-    # 3. Pre-load model SBERT
-    try:
-        logger.info("Pre-loading model SBERT (multilingual-e5-base)...")
-        get_text_embedder()
-        logger.info("Model SBERT siap digunakan.")
-    except Exception as e:
-        logger.error(f"Gagal memuat model SBERT pada startup: {str(e)}")
+    # 3. Model SBERT & CLIP dikonfigurasi on-demand (lazy load) agar startup instan dan hemat memori
+    logger.info("Model SBERT (multilingual-e5-base) dan CLIP Vision siap dimuat secara on-demand.")
         
     # 4. Model CLIP dikonfigurasi on-demand (lazy load) agar memori CPU efisien
     logger.info("Model CLIP Vision siap dimuat secara on-demand saat ada gambar.")
