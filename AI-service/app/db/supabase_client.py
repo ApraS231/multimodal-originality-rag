@@ -15,13 +15,11 @@ class SupabaseVectorClient:
         self._conn = None
 
     def _clean_db_url(self, url: str) -> str:
-        import re
-        # Hapus pgbouncer=true yang sering disertakan oleh Prisma Supabase
-        cleaned = re.sub(r'[?&]pgbouncer=[^&]*', '', url)
-        # Jika URL menyisakan tanda tanya menggantung, hapus
-        if cleaned.endswith('?'):
-            cleaned = cleaned[:-1]
-        return cleaned
+        # Potong seluruh query parameter Prisma Supabase (?pgbouncer=true&connection_limit=10)
+        # agar psycopg2 terhubung langsung ke nama database PostgreSQL yang valid
+        if "?" in url:
+            return url.split("?")[0]
+        return url
 
     def get_connection(self):
         """

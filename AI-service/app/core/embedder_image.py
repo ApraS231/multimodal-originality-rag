@@ -1,5 +1,7 @@
 from __future__ import annotations
 import torch
+# Batasi alokasi thread PyTorch CPU ke 1 untuk efisiensi memori di shared server
+torch.set_num_threads(1)
 from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
 import io

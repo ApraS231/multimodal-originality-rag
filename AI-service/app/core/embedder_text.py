@@ -1,4 +1,6 @@
 import torch
+# Batasi alokasi thread PyTorch CPU ke 1 untuk efisiensi memori di shared server
+torch.set_num_threads(1)
 from sentence_transformers import SentenceTransformer
 import logging
 

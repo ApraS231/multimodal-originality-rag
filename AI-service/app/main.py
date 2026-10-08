@@ -49,13 +49,8 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Gagal memuat model SBERT pada startup: {str(e)}")
         
-    # 4. Pre-load model CLIP
-    try:
-        logger.info("Pre-loading model CLIP (clip-vit-base-patch32)...")
-        get_image_embedder()
-        logger.info("Model CLIP siap digunakan.")
-    except Exception as e:
-        logger.error(f"Gagal memuat model CLIP pada startup: {str(e)}")
+    # 4. Model CLIP dikonfigurasi on-demand (lazy load) agar memori CPU efisien
+    logger.info("Model CLIP Vision siap dimuat secara on-demand saat ada gambar.")
 
     # 5. Pre-load model Prototypical Head
     try:
