@@ -14,7 +14,7 @@ import { registerSeedingWorker } from './workers/seeding'
 
 const app = new Elysia()
   .use(cors({
-    origin: 'http://localhost:5173', // Port default Vite React
+    origin: true,
     credentials: true
   }))
   .use(rateLimit({

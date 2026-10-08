@@ -127,23 +127,39 @@ export default function Login() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [regError, setRegError] = useState('');
 
-  // Fungsi pengisian kredensial demo cepat (berdasarkan seed.ts)
-  const handleFillDemo = (email: string, pass: string) => {
+  // Fungsi Fast Login khusus Asisten Lab (1-Klik langsung proses login)
+  const handleFastLoginAslab = () => {
     setIsRegister(false);
+    const email = 'alvin.aslab@stitek.ac.id';
+    const password = 'PasswordAslab123!';
     setLoginEmail(email);
-    setLoginPassword(pass);
+    setLoginPassword(password);
     setLoginError('');
+    loginMutation.mutate({ email, password });
   };
 
   // 1. Mutation: Login
   const loginMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (credentials?: { email: string; password: string } | void) => {
+      const email = (credentials?.email ?? loginEmail).trim();
+      const password = credentials?.password ?? loginPassword;
+
       const res = await fetch(`${backendUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+        body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await res.text();
+        throw new Error(
+          res.status === 404
+            ? 'Endpoint API tidak ditemukan (HTTP 404). Nginx reverse proxy /api ke port 3000 belum aktif di server.'
+            : `Respon server tidak valid (${res.status}): ${text.slice(0, 80)}`
+        );
+      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Email atau kata sandi tidak valid.');
@@ -202,7 +218,7 @@ export default function Login() {
       setLoginError('Email dan kata sandi wajib diisi.');
       return;
     }
-    loginMutation.mutate();
+    loginMutation.mutate({ email: loginEmail.trim(), password: loginPassword });
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -371,41 +387,32 @@ export default function Login() {
                   </Button>
                 </div>
 
-                {/* Kompartemen Demo Kredensial Cepat (Berdasarkan seed.ts) */}
-                <div className="p-3 rounded bg-[#F7F3E9] border-2 border-[#0D1B2A]/15 space-y-2">
+                {/* Kompartemen Fast Login Asisten Lab (1-Klik Langsung Masuk) */}
+                <div className="p-3 rounded-lg bg-[#F7F3E9] border-2 border-[#0D1B2A]/15 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                      <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-                      <span>Akun Evaluasi Cepat</span>
+                    <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                      <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span>Akses Instan Pengujian</span>
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">1-Klik</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#0D1B2A] font-mono font-bold">
+                      1-KLIK
+                    </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => handleFillDemo('admin@stitek.ac.id', 'PasswordAdmin123!')}
-                      className="px-2 py-1 bg-white hover:bg-[#F7F3E9] text-[#0D1B2A] rounded border-2 border-[#0D1B2A]/20 hover:border-[#0D1B2A] font-bold transition-all cursor-pointer truncate text-center hover:shadow-[1px_1px_0px_#D4AF37]"
-                      title="Klik untuk mengisi akun Admin"
-                    >
-                      Admin
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleFillDemo('alvin.aslab@stitek.ac.id', 'PasswordAslab123!')}
-                      className="px-2 py-1 bg-white hover:bg-[#F7F3E9] text-[#0D1B2A] rounded border-2 border-[#0D1B2A]/20 hover:border-[#0D1B2A] font-bold transition-all cursor-pointer truncate text-center hover:shadow-[1px_1px_0px_#D4AF37]"
-                      title="Klik untuk mengisi akun Aslab Alvin"
-                    >
-                      Aslab Alvin
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleFillDemo('gibson.kalab@stitek.ac.id', 'PasswordKalab123!')}
-                      className="px-2 py-1 bg-white hover:bg-[#F7F3E9] text-[#0D1B2A] rounded border-2 border-[#0D1B2A]/20 hover:border-[#0D1B2A] font-bold transition-all cursor-pointer truncate text-center hover:shadow-[1px_1px_0px_#D4AF37]"
-                      title="Klik untuk mengisi akun Dr. Gibson (Kalab)"
-                    >
-                      Dr. Gibson
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFastLoginAslab}
+                    disabled={loginMutation.isPending}
+                    className="w-full py-2 px-3 bg-white hover:bg-[#F7F3E9] text-[#0D1B2A] rounded-md border-2 border-[#0D1B2A] font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[2px_2px_0px_#D4AF37] hover:shadow-[3px_3px_0px_#0D1B2A] active:translate-y-0.5 active:shadow-none disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+                    title="Masuk langsung sebagai Asisten Laboratorium (Alvin) tanpa mengetik sandi"
+                  >
+                    <UserCheck className="w-4 h-4 text-[#D4AF37]" />
+                    <span>
+                      {loginMutation.isPending ? 'Memproses Masuk...' : 'Fast Login Asisten Lab (Alvin)'}
+                    </span>
+                  </button>
+                  <p className="text-[10px] text-slate-500 text-center font-mono">
+                    alvin.aslab@stitek.ac.id
+                  </p>
                 </div>
               </form>
             ) : (
