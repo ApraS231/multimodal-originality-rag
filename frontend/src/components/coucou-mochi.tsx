@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
+
+export type MochiStatus = 'idle' | 'typing' | 'thinking' | 'success';
 
 export interface CoucouMochiProps {
   size?: number;
@@ -6,6 +8,7 @@ export interface CoucouMochiProps {
   onClick?: () => void;
   label?: string;
   interactive?: boolean;
+  status?: MochiStatus;
 }
 
 interface Particle {
@@ -20,7 +23,7 @@ interface Particle {
   size: number;
 }
 
-type EmoteType = 'idle' | 'heart' | 'star' | 'wink' | 'happy' | 'surprised' | 'dizzy';
+type EmoteType = 'idle' | 'heart' | 'star' | 'wink' | 'happy' | 'surprised' | 'dizzy' | 'delighted';
 
 export function CoucouMochi({
   size = 140,
@@ -28,9 +31,13 @@ export function CoucouMochi({
   onClick,
   label = 'Mochi Companion AI',
   interactive = true,
+  status = 'idle',
 }: CoucouMochiProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Cycle index for variety of emotes on each click
+  const emoteCycleRef = useRef(0);
 
   // Anim state stored in refs for 60fps performance without React re-renders
   const stateRef = useRef({
@@ -43,8 +50,6 @@ export function CoucouMochi({
     open: 1, // eye open factor (0 = closed, 1 = open)
     scaleX: 1,
     scaleY: 1,
-    targetScaleX: 1,
-    targetScaleY: 1,
     blush: 0.45,
     targetBlush: 0.45,
     emote: 'idle' as EmoteType,
@@ -57,13 +62,27 @@ export function CoucouMochi({
     particles: [] as Particle[],
     isHovered: false,
     lastTime: performance.now(),
+    currentStatus: status,
   });
 
-  // Track cursor across window
+  // Keep stateRef in sync with status prop
+  useEffect(() => {
+    stateRef.current.currentStatus = status;
+    if (status === 'success') {
+      stateRef.current.emote = 'delighted';
+      stateRef.current.emoteUntil = Date.now() + 1600;
+    }
+  }, [status]);
+
+  // Track cursor across window when idle
   useEffect(() => {
     if (!interactive) return;
 
     const handlePointerMove = (e: PointerEvent) => {
+      const s = stateRef.current;
+      // When thinking, Mochi looks up pensively, don't override with mouse
+      if (s.currentStatus === 'thinking') return;
+
       const container = containerRef.current;
       if (!container) return;
 
@@ -76,10 +95,10 @@ export function CoucouMochi({
       const dist = Math.hypot(dx, dy);
 
       // Dead zone close to center
-      if (dist < 40) {
-        stateRef.current.targetYaw = 0;
-        stateRef.current.targetPitch = 0;
-        stateRef.current.targetTilt = 0;
+      if (dist < 35) {
+        s.targetYaw = 0;
+        s.targetPitch = 0;
+        s.targetTilt = 0;
         return;
       }
 
@@ -88,9 +107,9 @@ export function CoucouMochi({
       const nx = Math.max(-1, Math.min(1, dx / maxDist));
       const ny = Math.max(-1, Math.min(1, dy / maxDist));
 
-      stateRef.current.targetYaw = nx * 0.52;
-      stateRef.current.targetPitch = -ny * 0.42; // pitch up when cursor above
-      stateRef.current.targetTilt = nx * 0.06;
+      s.targetYaw = nx * 0.52;
+      s.targetPitch = -ny * 0.42; // pitch up when cursor above
+      s.targetTilt = nx * 0.06;
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
@@ -118,17 +137,31 @@ export function CoucouMochi({
       s.lastTime = now;
       const t = now / 1000;
 
-      // 1. Lerp cursor look angles with smooth spring damping
-      const kLook = 1 - Math.pow(0.002, dt);
+      // 1. Status Overrides (Thinking / Typing / Idle)
+      if (s.currentStatus === 'thinking') {
+        // Looking up thoughtfully, soft inquisitive sway
+        s.targetYaw = 0.42;
+        s.targetPitch = 0.36;
+        s.targetTilt = Math.sin(t * 3.2) * 0.08;
+      } else if (s.currentStatus === 'typing') {
+        // Listening / waiting posture: slight curious tilt towards input
+        s.targetYaw = -0.22;
+        s.targetPitch = -0.12;
+        s.targetTilt = 0.14;
+      }
+
+      // 2. Lerp angles with smooth spring damping
+      const kLook = 1 - Math.pow(0.0025, dt);
       s.yaw += (s.targetYaw - s.yaw) * kLook;
       s.pitch += (s.targetPitch - s.pitch) * kLook;
       s.tilt += (s.targetTilt - s.tilt) * kLook;
 
-      // 2. Natural organic breathing (idle squash & stretch sine wave)
-      const breathe = Math.sin(t * 2.2) * 0.025;
-      const floatY = Math.sin(t * 1.6) * 0.035;
+      // 3. Natural organic breathing (idle squash & stretch sine wave)
+      const breatheSpeed = s.currentStatus === 'thinking' ? 3.2 : (s.currentStatus === 'typing' ? 2.6 : 2.0);
+      const breathe = Math.sin(t * breatheSpeed) * 0.024;
+      const floatY = Math.sin(t * 1.5) * 0.035;
 
-      // 3. Blinking cycle
+      // 4. Blinking cycle
       if (now > s.nextBlink && !s.isBlinking && s.emote === 'idle') {
         s.isBlinking = true;
         s.blinkStart = now;
@@ -147,17 +180,17 @@ export function CoucouMochi({
         }
       }
 
-      // 4. Click boop squash animation with spring bounce
+      // 5. Click boop squash animation with spring bounce
       let animScaleX = 1;
       let animScaleY = 1;
       if (s.isSquashing) {
         const elapsed = now - s.squashStart;
-        if (elapsed < 420) {
-          const progress = elapsed / 420;
+        if (elapsed < 440) {
+          const progress = elapsed / 440;
           // Spring curve: squash down -> stretch up -> slight rebound -> rest
-          const spring = Math.sin(progress * Math.PI * 3.5) * Math.exp(-progress * 4.5);
-          animScaleX = 1 + spring * 0.22;
-          animScaleY = 1 - spring * 0.25;
+          const spring = Math.sin(progress * Math.PI * 3.5) * Math.exp(-progress * 4.2);
+          animScaleX = 1 + spring * 0.24;
+          animScaleY = 1 - spring * 0.28;
         } else {
           s.isSquashing = false;
         }
@@ -167,16 +200,18 @@ export function CoucouMochi({
       s.scaleX = (1 - breathe * 0.7) * animScaleX;
       s.scaleY = (1 + breathe) * animScaleY;
 
-      // Emote expiration check
+      // 6. Emote expiration -> smooth return to normal idle!
       if (s.emote !== 'idle' && now > s.emoteUntil) {
         s.emote = 'idle';
       }
 
       // Blush interpolation
-      const targetBlush = s.isHovered ? 0.65 : (s.emote === 'heart' ? 0.75 : 0.45);
+      const targetBlush = s.isHovered 
+        ? 0.65 
+        : (s.emote === 'heart' ? 0.75 : (s.currentStatus === 'typing' ? 0.55 : 0.45));
       s.blush += (targetBlush - s.blush) * (1 - Math.pow(0.005, dt));
 
-      // 5. Canvas Drawing (Coucou superellipsoid engine)
+      // 7. Canvas Drawing (Coucou superellipsoid engine)
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.scale(dpr, dpr);
@@ -219,8 +254,11 @@ export function CoucouMochi({
       // Base Linear Gradient
       setMochiPath();
       const g = ctx.createLinearGradient(rx * 0.7, -ry * 0.85, -rx * 0.8, ry * 0.9);
-      g.addColorStop(0, '#FFFAF5');
-      g.addColorStop(1, '#DAC9BA');
+      // Slight soft lavender tint when thinking
+      const topColor = s.currentStatus === 'thinking' ? '#FAF5FF' : '#FFFAF5';
+      const botColor = s.currentStatus === 'thinking' ? '#D6C8E0' : '#DAC9BA';
+      g.addColorStop(0, topColor);
+      g.addColorStop(1, botColor);
       ctx.fillStyle = g;
       ctx.fill();
 
@@ -287,7 +325,7 @@ export function CoucouMochi({
         const ew = R * EYE_W;
         const eh = R * EYE_H;
 
-        if (s.emote === 'happy') {
+        if (s.emote === 'happy' || s.emote === 'delighted') {
           ctx.lineWidth = ew * 0.52;
           ctx.lineCap = 'round';
           ctx.beginPath();
@@ -356,7 +394,78 @@ export function CoucouMochi({
 
       ctx.restore(); // end Mochi body
 
-      // 6. Floating Particles
+      // 8. Coucou Thinking Bubble (Animated Wave Dots)
+      if (s.currentStatus === 'thinking') {
+        const bx = cx - rx * 0.65;
+        const by = cy - ry * 0.78 + Math.sin(t * 3) * 3;
+        const bw = R * 0.72;
+        const bh = R * 0.42;
+
+        ctx.save();
+        ctx.translate(bx, by);
+
+        // Bubble Shadow
+        ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
+        ctx.shadowBlur = 10;
+
+        // Bubble Background (Deep Navy / Violet border)
+        ctx.fillStyle = '#0D1B2A';
+        ctx.beginPath();
+        ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#8B5CF6';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // Pointer triangle to Mochi's head
+        ctx.beginPath();
+        ctx.moveTo(bw * 0.15, bh * 0.35);
+        ctx.lineTo(bw * 0.35, bh * 0.85);
+        ctx.lineTo(bw * 0.35, bh * 0.35);
+        ctx.fillStyle = '#0D1B2A';
+        ctx.fill();
+
+        // 3 Animated Bouncing Dots inside the bubble
+        ctx.shadowBlur = 0;
+        for (let i = 0; i < 3; i++) {
+          const ph = ((t * 2.8 - i * 0.25) % 1 + 1) % 1;
+          const bounce = Math.sin(ph * Math.PI) * 2.5;
+          const dotR = R * 0.055;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc((i - 1) * R * 0.18, -bounce, dotR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      // 9. Listening / Typing Badge (Curious single pulsing wave indicator)
+      if (s.currentStatus === 'typing') {
+        const bx = cx + rx * 0.65;
+        const by = cy - ry * 0.72;
+        const pulse = 1 + Math.sin(t * 4) * 0.18;
+
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.scale(pulse, pulse);
+
+        ctx.fillStyle = '#D4AF37';
+        ctx.beginPath();
+        ctx.arc(0, 0, R * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, R * 0.16, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // 10. Floating Particles (Hearts & Stars)
       for (let i = s.particles.length - 1; i >= 0; i--) {
         const p = s.particles[i];
         p.age += dt;
@@ -409,46 +518,50 @@ export function CoucouMochi({
     };
   }, [size]);
 
-  // Click "Boop" interaction
+  // Click "Boop" interaction:
+  // Shows emote + particles -> smoothly transitions back to normal idle!
   const handleBoop = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const s = stateRef.current;
     const now = Date.now();
 
-    // Trigger spring squash
+    // Trigger spring squash bounce
     s.isSquashing = true;
     s.squashStart = performance.now();
 
-    // Cycle or pick random cute emote
-    const emotes: EmoteType[] = ['heart', 'star', 'wink', 'happy', 'surprised'];
-    const chosen = emotes[Math.floor(Math.random() * emotes.length)];
-    s.emote = chosen;
-    s.emoteUntil = now + 900;
+    // Cycle through adorable emotes so every click gives a delightful reaction
+    const emotes: EmoteType[] = ['heart', 'star', 'wink', 'happy', 'delighted', 'surprised'];
+    const chosen = emotes[emoteCycleRef.current % emotes.length];
+    emoteCycleRef.current += 1;
 
-    // Spawn floating particle
+    s.emote = chosen;
+    // Emote lasts 1.3 seconds, then automatically returns to 'idle'!
+    s.emoteUntil = now + 1300;
+
+    // Spawn floating particle matching the emote
     if (chosen === 'heart') {
       s.particles.push({
         type: 'heart',
-        x: (Math.random() - 0.5) * 30,
+        x: (Math.random() - 0.5) * 32,
         y: -size * 0.28,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: -0.8 - Math.random() * 0.5,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: -0.85 - Math.random() * 0.5,
         age: 0,
-        life: 0.9,
+        life: 0.95,
         rot: 0,
-        size: 10 + Math.random() * 4,
+        size: 11 + Math.random() * 4,
       });
-    } else if (chosen === 'star' || chosen === 'happy') {
+    } else if (chosen === 'star' || chosen === 'happy' || chosen === 'delighted') {
       s.particles.push({
         type: 'star',
-        x: (Math.random() - 0.5) * 35,
+        x: (Math.random() - 0.5) * 36,
         y: -size * 0.25,
         vx: (Math.random() - 0.5) * 0.5,
-        vy: -0.7 - Math.random() * 0.4,
+        vy: -0.75 - Math.random() * 0.4,
         age: 0,
-        life: 0.85,
+        life: 0.9,
         rot: Math.random() * 3,
-        size: 9 + Math.random() * 3,
+        size: 10 + Math.random() * 3,
       });
     }
 

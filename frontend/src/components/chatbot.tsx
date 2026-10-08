@@ -297,12 +297,19 @@ export default function Chatbot({
 
   const hasMessages = activeSession?.pesan_obrolan && activeSession.pesan_obrolan.length > 0;
 
+  // Status animasi Mochi (berpikir saat AI memproses jawaban, menyimak/menunggu saat mengetik)
+  const isThinking = sendMessageMutation.isPending;
+  const isTyping = inputText.trim().length > 0;
+  const mochiStatus: 'idle' | 'typing' | 'thinking' | 'success' = isThinking
+    ? 'thinking'
+    : (isTyping ? 'typing' : 'idle');
+
   return (
     <>
       {/* 1. ROOM CHAT PANEL (Berada persis di atas maskot, otomatis bergeser jika drawer samping terbuka) */}
       {isOpen && (
         <div 
-          className={`fixed bottom-[148px] z-[70] w-[calc(100vw-32px)] sm:w-[410px] h-[min(510px,calc(100vh-165px))] max-h-[calc(100vh-165px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
+          className={`fixed bottom-[165px] z-[70] w-[calc(100vw-32px)] sm:w-[410px] h-[min(510px,calc(100vh-185px))] max-h-[calc(100vh-185px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
             isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
           }`}
           role="dialog"
@@ -654,7 +661,7 @@ export default function Chatbot({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-[140px] z-[70] bg-[#0D1B2A] hover:bg-slate-800 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xl border border-slate-700 flex items-center gap-2 cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95 select-none animate-in fade-in slide-in-from-bottom-1 ${
+          className={`fixed bottom-[165px] z-[70] bg-[#0D1B2A] hover:bg-slate-800 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xl border border-slate-700 flex items-center gap-2 cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95 select-none animate-in fade-in slide-in-from-bottom-1 ${
             isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
           }`}
           title="Buka ruang obrolan"
@@ -669,9 +676,9 @@ export default function Chatbot({
         </button>
       )}
 
-      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (UKURAN 135px, OTOMATIS BERGESER RAMPING SAAT DRAWER TERBUKA) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (UKURAN 135px, DIPOSISIKAN RAPI TANPA TERPOTONG) */}
       <div 
-        className={`fixed bottom-3 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
+        className={`fixed bottom-6 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
           isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
         }`}
         title={isOpen ? "Klik maskot untuk menutup obrolan" : "Klik maskot untuk membuka obrolan"}
@@ -680,11 +687,12 @@ export default function Chatbot({
           size={135}
           label="Maskot Mochi Veritas AI STITEK Bontang"
           onClick={() => setIsOpen(prev => !prev)}
+          status={mochiStatus}
         />
 
         {/* Titik Indikator Status Online AI */}
         <span 
-          className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 rounded-full bg-[#415A77]/100 border-2 border-white shadow-xs pointer-events-none" 
+          className="absolute bottom-3 right-3 w-3.5 h-3.5 rounded-full bg-[#415A77]/100 border-2 border-white shadow-xs pointer-events-none" 
           title="Veritas AI Online"
         />
       </div>

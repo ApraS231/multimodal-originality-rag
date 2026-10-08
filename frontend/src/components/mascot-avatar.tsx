@@ -12,6 +12,7 @@ interface MascotAvatarProps {
   directionsUrl?: string;
   reactionsUrl?: string;
   useSmoothCanvas?: boolean;
+  status?: 'idle' | 'typing' | 'thinking' | 'success';
 }
 
 export function MascotAvatar({
@@ -24,6 +25,7 @@ export function MascotAvatar({
   directionsUrl = '/mascots/mochi-directions.webp',
   reactionsUrl = '/mascots/mochi-reactions.webp',
   useSmoothCanvas = true,
+  status = 'idle',
 }: MascotAvatarProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -71,6 +73,7 @@ export function MascotAvatar({
             size={size}
             label={label}
             onClick={onClick}
+            status={status}
           />
         ) : (
           <Mascot
