@@ -567,16 +567,16 @@ export default function Chatbot({
                     );
                   })}
 
-                  {/* Indikator Penalaran Mengetik (Minimalis, Tenang) */}
+                  {/* Indikator Penalaran Mengetik (Minimalis, Elegan) */}
                   {sendMessageMutation.isPending && (
                     <div className="flex justify-start items-center gap-2 pl-1 animate-in fade-in duration-150">
-                      <div className="bg-white border border-slate-200 rounded-xl rounded-tl-xs px-3 py-1.5 text-xs text-slate-600 shadow-2xs flex items-center gap-2">
-                        <span className="flex gap-1 items-center">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                      <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs px-3.5 py-2 text-xs text-slate-600 shadow-xs flex items-center gap-2.5">
+                        <span className="flex items-center gap-1 shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.2s_infinite_ease-in-out]" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.2s_infinite_ease-in-out]" style={{ animationDelay: '180ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.2s_infinite_ease-in-out]" style={{ animationDelay: '360ms' }} />
                         </span>
-                        <span className="text-[10.5px] font-medium text-[#0D1B2A]">Menalar basis data analitik...</span>
+                        <span className="text-[11px] font-medium text-[#0D1B2A]">Menalar basis data analitik...</span>
                       </div>
                     </div>
                   )}
@@ -656,23 +656,23 @@ export default function Chatbot({
         </div>
       )}
 
-      {/* 2. BUBBLE CHAT CTA DENGAN 3 DOT DARI MASKOT (Tampil tepat di atas maskot saat obrolan tertutup) */}
+      {/* 2. BUBBLE CHAT CTA DENGAN 3 DOT MINIMALIS ELEGAN (Tampil tepat di atas maskot saat obrolan tertutup) */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-[165px] z-[70] bg-[#0D1B2A] hover:bg-slate-800 text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xl border border-slate-700 flex items-center gap-2 cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95 select-none animate-in fade-in slide-in-from-bottom-1 ${
+          className={`fixed bottom-[165px] z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in slide-in-from-bottom-1 ${
             isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
           }`}
-          title="Buka ruang obrolan"
+          title="Buka ruang percakapan dengan Veritas AI"
         >
-          {/* 3 Dot Indikator Pesan */}
-          <span className="flex gap-1 items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+          {/* 3 Dot Indikator Pesan Minimalis Bernapas */}
+          <span className="flex items-center gap-1 shrink-0 px-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s', animationDelay: '200ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s', animationDelay: '400ms' }} />
           </span>
-          <span>{isSideDrawerOpen ? 'Tanya Veritas AI' : 'Tanya Veritas AI'}</span>
+          <span className="font-semibold text-white">Tanya Veritas AI</span>
         </button>
       )}
 

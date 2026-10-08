@@ -38,8 +38,10 @@ export function CoucouMochi({
 
   // Cycle index for variety of emotes on each click
   const emoteCycleRef = useRef(0);
+  const emoteTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Anim state stored in refs for 60fps performance without React re-renders
+  // ALL timestamps use performance.now() consistently!
   const stateRef = useRef({
     yaw: 0,
     pitch: 0,
@@ -53,8 +55,8 @@ export function CoucouMochi({
     blush: 0.45,
     targetBlush: 0.45,
     emote: 'idle' as EmoteType,
-    emoteUntil: 0,
-    nextBlink: Date.now() + 2000,
+    emoteUntil: 0, // measured in performance.now() ms
+    nextBlink: performance.now() + 2000,
     isBlinking: false,
     blinkStart: 0,
     isSquashing: false,
@@ -69,10 +71,23 @@ export function CoucouMochi({
   useEffect(() => {
     stateRef.current.currentStatus = status;
     if (status === 'success') {
+      const now = performance.now();
       stateRef.current.emote = 'delighted';
-      stateRef.current.emoteUntil = Date.now() + 1600;
+      stateRef.current.emoteUntil = now + 1400;
+
+      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current);
+      emoteTimerRef.current = setTimeout(() => {
+        stateRef.current.emote = 'idle';
+      }, 1400);
     }
   }, [status]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current);
+    };
+  }, []);
 
   // Track cursor across window when idle
   useEffect(() => {
@@ -394,58 +409,59 @@ export function CoucouMochi({
 
       ctx.restore(); // end Mochi body
 
-      // 8. Coucou Thinking Bubble (Animated Wave Dots)
+      // 8. Coucou Minimalist Thinking Bubble
       if (s.currentStatus === 'thinking') {
-        const bx = cx - rx * 0.65;
-        const by = cy - ry * 0.78 + Math.sin(t * 3) * 3;
-        const bw = R * 0.72;
-        const bh = R * 0.42;
+        const bx = cx - rx * 0.62;
+        const by = cy - ry * 0.78 + Math.sin(t * 2.8) * 2.5;
+        const bw = R * 0.68;
+        const bh = R * 0.38;
 
         ctx.save();
         ctx.translate(bx, by);
 
-        // Bubble Shadow
-        ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
-        ctx.shadowBlur = 10;
+        // Subtle soft shadow
+        ctx.shadowColor = 'rgba(13, 27, 42, 0.25)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
 
-        // Bubble Background (Deep Navy / Violet border)
-        ctx.fillStyle = '#0D1B2A';
+        // Clean capsule pill
+        ctx.fillStyle = 'rgba(13, 27, 42, 0.94)';
         ctx.beginPath();
         ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#8B5CF6';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        // Pointer triangle to Mochi's head
+        // Delicate pointer tail
         ctx.beginPath();
-        ctx.moveTo(bw * 0.15, bh * 0.35);
-        ctx.lineTo(bw * 0.35, bh * 0.85);
-        ctx.lineTo(bw * 0.35, bh * 0.35);
-        ctx.fillStyle = '#0D1B2A';
+        ctx.moveTo(bw * 0.18, bh * 0.3);
+        ctx.lineTo(bw * 0.32, bh * 0.78);
+        ctx.lineTo(bw * 0.34, bh * 0.3);
+        ctx.fillStyle = 'rgba(13, 27, 42, 0.94)';
         ctx.fill();
 
-        // 3 Animated Bouncing Dots inside the bubble
+        // 3 Minimalist Smooth Dots waving in elegant rhythm
         ctx.shadowBlur = 0;
         for (let i = 0; i < 3; i++) {
-          const ph = ((t * 2.8 - i * 0.25) % 1 + 1) % 1;
-          const bounce = Math.sin(ph * Math.PI) * 2.5;
-          const dotR = R * 0.055;
+          const ph = ((t * 2.5 - i * 0.22) % 1 + 1) % 1;
+          const bounce = Math.sin(ph * Math.PI) * 2.2;
+          const dotR = R * 0.048;
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          ctx.arc((i - 1) * R * 0.18, -bounce, dotR, 0, Math.PI * 2);
+          ctx.arc((i - 1) * R * 0.16, -bounce, dotR, 0, Math.PI * 2);
           ctx.fill();
         }
 
         ctx.restore();
       }
 
-      // 9. Listening / Typing Badge (Curious single pulsing wave indicator)
+      // 9. Listening / Typing Badge (Curious single pulsing indicator)
       if (s.currentStatus === 'typing') {
         const bx = cx + rx * 0.65;
         const by = cy - ry * 0.72;
-        const pulse = 1 + Math.sin(t * 4) * 0.18;
+        const pulse = 1 + Math.sin(t * 4) * 0.16;
 
         ctx.save();
         ctx.translate(bx, by);
@@ -453,13 +469,13 @@ export function CoucouMochi({
 
         ctx.fillStyle = '#D4AF37';
         ctx.beginPath();
-        ctx.arc(0, 0, R * 0.09, 0, Math.PI * 2);
+        ctx.arc(0, 0, R * 0.08, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.arc(0, 0, R * 0.16, 0, Math.PI * 2);
+        ctx.arc(0, 0, R * 0.15, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.restore();
@@ -519,49 +535,55 @@ export function CoucouMochi({
   }, [size]);
 
   // Click "Boop" interaction:
-  // Shows emote + particles -> smoothly transitions back to normal idle!
+  // Shows emote + particles -> guaranteed to smoothly transition back to normal idle after 1.2s!
   const handleBoop = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const s = stateRef.current;
-    const now = Date.now();
+    const now = performance.now();
 
     // Trigger spring squash bounce
     s.isSquashing = true;
-    s.squashStart = performance.now();
+    s.squashStart = now;
 
-    // Cycle through adorable emotes so every click gives a delightful reaction
+    // Cycle through adorable emotes: each click shows ONE cute emote, then returns to normal
     const emotes: EmoteType[] = ['heart', 'star', 'wink', 'happy', 'delighted', 'surprised'];
     const chosen = emotes[emoteCycleRef.current % emotes.length];
     emoteCycleRef.current += 1;
 
     s.emote = chosen;
-    // Emote lasts 1.3 seconds, then automatically returns to 'idle'!
-    s.emoteUntil = now + 1300;
+    // Emote lasts exactly 1.2s, then automatically and smoothly returns to 'idle'!
+    s.emoteUntil = now + 1200;
 
-    // Spawn floating particle matching the emote
+    // Guaranteed fallback timer to reset to 'idle'
+    if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current);
+    emoteTimerRef.current = setTimeout(() => {
+      stateRef.current.emote = 'idle';
+    }, 1200);
+
+    // Spawn 1 subtle floating particle matching the emote
     if (chosen === 'heart') {
       s.particles.push({
         type: 'heart',
-        x: (Math.random() - 0.5) * 32,
+        x: (Math.random() - 0.5) * 24,
         y: -size * 0.28,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: -0.85 - Math.random() * 0.5,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: -0.8 - Math.random() * 0.4,
         age: 0,
-        life: 0.95,
+        life: 0.9,
         rot: 0,
-        size: 11 + Math.random() * 4,
+        size: 11,
       });
     } else if (chosen === 'star' || chosen === 'happy' || chosen === 'delighted') {
       s.particles.push({
         type: 'star',
-        x: (Math.random() - 0.5) * 36,
-        y: -size * 0.25,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: -0.75 - Math.random() * 0.4,
+        x: (Math.random() - 0.5) * 26,
+        y: -size * 0.26,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -0.7 - Math.random() * 0.35,
         age: 0,
-        life: 0.9,
+        life: 0.85,
         rot: Math.random() * 3,
-        size: 10 + Math.random() * 3,
+        size: 10,
       });
     }
 
