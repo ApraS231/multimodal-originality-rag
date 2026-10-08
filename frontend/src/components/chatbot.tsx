@@ -47,6 +47,21 @@ interface MochiPosition {
 const MOCHI_SIZE = 120;
 const MOCHI_STORAGE_KEY = 'veritas_mochi_position';
 
+const BUBBLE_PROMPTS_DEFAULT = [
+  'Butuh bantuan periksa naskah? ✨',
+  'Mau cek skor orisinalitas laporan? 📄',
+  'Ada yang ingin ditanyakan ke AI? 💬',
+  'Perlu penjelasan indikasi kemiripan? 🔍',
+  'Tanya apa saja seputar integritas naskah! 💡',
+];
+
+const BUBBLE_PROMPTS_REPORT = [
+  'Ada yang perlu dicek dari naskah ini? 🧐',
+  'Mau rangkuman orisinalitas laporan ini? 📊',
+  'Bandingkan gambar grafik hasil praktikum? 🔍',
+  'Butuh evaluasi kesamaan segmen naskah? 💡',
+];
+
 const getInitialMochiPosition = (): MochiPosition => {
   if (typeof window === 'undefined') return { x: 0, y: 0, edge: 'right' };
   try {
@@ -91,6 +106,39 @@ export default function Chatbot({
   const [mochiPos, setMochiPos] = useState<MochiPosition>(getInitialMochiPosition);
   const [isDraggingMochi, setIsDraggingMochi] = useState(false);
   const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number; moved: boolean } | null>(null);
+
+  // State Animasi Bubble Chat Mochi (Muncul berkala membawa pertanyaan CTA & hilang menyisakan mochi saja)
+  const bubblePrompts = idLaporan ? BUBBLE_PROMPTS_REPORT : BUBBLE_PROMPTS_DEFAULT;
+  const [isBubbleVisible, setIsBubbleVisible] = useState(false);
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [isHoveringMochi, setIsHoveringMochi] = useState(false);
+  const isFirstRenderRef = useRef(true);
+
+  // Siklus kemunculan Bubble Chat: Muncul dengan pertanyaan, lalu memudar menyisakan Mochi saja
+  useEffect(() => {
+    if (isOpen || isDraggingMochi) {
+      setIsBubbleVisible(false);
+      return;
+    }
+
+    let timer: ReturnType<typeof setTimeout>;
+    if (isBubbleVisible) {
+      // Tampil selama 5.2 detik agar terbaca santai
+      timer = setTimeout(() => {
+        setIsBubbleVisible(false);
+      }, 5200);
+    } else {
+      // Jika render awal, jeda 2 detik sebelum menyapa; selanjutnya jeda 8.5 detik
+      const delay = isFirstRenderRef.current ? 2000 : 8500;
+      isFirstRenderRef.current = false;
+      timer = setTimeout(() => {
+        setCurrentPromptIndex((prev) => (prev + 1) % bubblePrompts.length);
+        setIsBubbleVisible(true);
+      }, delay);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isOpen, isDraggingMochi, isBubbleVisible, bubblePrompts.length]);
 
   // Resize listener agar Mochi selalu menempel di tepi layar saat window berubah
   useEffect(() => {
@@ -782,28 +830,45 @@ export default function Chatbot({
         </div>
       )}
 
-      {/* 2. BUBBLE CHAT CTA DENGAN 3 DOT MINIMALIS ELEGAN (Mengikuti posisi Mochi ke mana pun digeser) */}
-      {!isOpen && !isDraggingMochi && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          style={{
-            left: `${Math.max(12, Math.min(window.innerWidth - 170, mochiPos.x + (MOCHI_SIZE / 2) - 75))}px`,
-            top: `${Math.max(16, mochiPos.y - 44)}px`,
-            transition: 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)',
-          }}
-          className="fixed z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in"
-          title="Buka ruang percakapan dengan Veritas AI"
-        >
-          {/* 3 Dot Indikator Pesan Minimalis Bernapas */}
-          <span className="flex items-center gap-1 shrink-0 px-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s', animationDelay: '200ms' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" style={{ animationDuration: '1.2s', animationDelay: '400ms' }} />
-          </span>
-          <span className="font-semibold text-white">Tanya Veritas AI</span>
-        </button>
-      )}
+      {/* 2. BUBBLE CHAT PERTANYAAN DARI MOCHI (KADANG MUNCUL & HILANG, MEMPERLIHATKAN HANYA MOCHI SAJA) */}
+      <div
+        onClick={() => setIsOpen(true)}
+        style={{
+          left: `${Math.max(12, Math.min(window.innerWidth - 245, mochiPos.edge === 'right' ? mochiPos.x + (MOCHI_SIZE / 2) - 195 : mochiPos.x + (MOCHI_SIZE / 2) - 30))}px`,
+          top: `${Math.max(14, mochiPos.y - 68)}px`,
+          transition: isDraggingMochi
+            ? 'none'
+            : 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease-out, transform 0.3s ease-out',
+        }}
+        className={`fixed z-[70] cursor-pointer select-none transition-all duration-300 ease-out transform ${
+          !isOpen && !isDraggingMochi && (isBubbleVisible || isHoveringMochi)
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 scale-90 translate-y-2 pointer-events-none'
+        }`}
+        title="Ketuk untuk membuka ruang obrolan Veritas AI"
+      >
+        <div className="relative bg-white/95 hover:bg-white text-slate-800 border border-amber-200/90 hover:border-amber-300 rounded-2xl px-3.5 py-2.5 shadow-[0_8px_24px_rgba(13,27,42,0.14)] backdrop-blur-md max-w-[225px] sm:max-w-[250px] group transition-all duration-200 hover:scale-[1.03] active:scale-95">
+          <div className="flex items-start gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#D4AF37] mt-1 shrink-0 animate-pulse" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-[#0D1B2A] leading-snug tracking-tight group-hover:text-[#8C6D1F] transition-colors">
+                {bubblePrompts[currentPromptIndex]}
+              </p>
+              <p className="text-[9.5px] font-medium text-slate-500 mt-0.5 flex items-center gap-1">
+                <span>Ketuk untuk bertanya</span>
+                <span className="text-[#8C6D1F] font-bold transition-transform group-hover:translate-x-0.5">→</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Ekor Segitiga Bubble yang menunjuk ke Mochi */}
+          <div
+            className={`absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-amber-200/90 group-hover:border-amber-300 transform rotate-45 ${
+              mochiPos.edge === 'right' ? 'right-7' : 'left-7'
+            }`}
+          />
+        </div>
+      </div>
 
       {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DRAGGABLE KE MANA SAJA + STICK TO EDGE) */}
       <div 
@@ -814,6 +879,8 @@ export default function Chatbot({
           dragStartRef.current = null;
           setIsDraggingMochi(false);
         }}
+        onMouseEnter={() => setIsHoveringMochi(true)}
+        onMouseLeave={() => setIsHoveringMochi(false)}
         style={{
           left: `${mochiPos.x}px`,
           top: `${mochiPos.y}px`,
@@ -835,12 +902,6 @@ export default function Chatbot({
             // Ditangani secara halus melalui pointer up agar tidak bentrok dengan drag
           }}
           status={mochiStatus}
-        />
-
-        {/* Titik Indikator Status Online AI */}
-        <span 
-          className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 rounded-full bg-[#415A77]/100 border-2 border-white shadow-xs pointer-events-none" 
-          title="Veritas AI Online"
         />
       </div>
     </>
