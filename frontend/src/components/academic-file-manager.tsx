@@ -770,7 +770,7 @@ export default function AcademicFileManager({
       {/* 2. KONTEN UTAMA: GRID ATAU LIST VIEW */}
       {isLoading ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-16 shadow-xs flex items-center justify-center">
-          <LoadingSpinner variant="section" message="Menyelaraskan direktori file manager..." />
+          <LoadingSpinner variant="inline" message="Menyelaraskan direktori file manager..." />
         </div>
       ) : displayedItems.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-12 shadow-xs text-center space-y-4">
@@ -854,7 +854,7 @@ export default function AcademicFileManager({
                 <div className="w-full flex items-center justify-between mb-1" onClick={(e) => e.stopPropagation()}>
                   <div>
                     {isLocked ? (
-                      <Lock className="w-3.5 h-3.5 text-slate-400" title="Terkunci" />
+                      <span title="Terkunci"><Lock className="w-3.5 h-3.5 text-slate-400" /></span>
                     ) : (
                       <span className="w-3.5 h-3.5" />
                     )}
