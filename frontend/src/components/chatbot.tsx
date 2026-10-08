@@ -48,18 +48,16 @@ const MOCHI_SIZE = 120;
 const MOCHI_STORAGE_KEY = 'veritas_mochi_position';
 
 const BUBBLE_PROMPTS_DEFAULT = [
+  'Ada yang bisa dibantu?',
   'Butuh bantuan periksa naskah?',
-  'Mau cek skor orisinalitas laporan?',
-  'Ada yang ingin ditanyakan ke Veritas AI?',
-  'Perlu penjelasan indikasi kemiripan?',
-  'Tanya seputar integritas akademik laporan.',
+  'Mau cek skor orisinalitas?',
+  'Tanya Veritas AI...',
 ];
 
 const BUBBLE_PROMPTS_REPORT = [
   'Ada yang perlu dicek dari naskah ini?',
-  'Mau rangkuman orisinalitas laporan ini?',
-  'Bandingkan teks atau grafik praktikum?',
-  'Butuh evaluasi kesamaan segmen naskah?',
+  'Mau rangkuman skor laporan ini?',
+  'Tanya Veritas AI seputar naskah...',
 ];
 
 const getInitialMochiPosition = (): MochiPosition => {
@@ -876,41 +874,32 @@ export default function Chatbot({
         </div>
       )}
 
-      {/* 2. BUBBLE CHAT PERTANYAAN DARI MOCHI (KADANG MUNCUL & HILANG, MEMPERLIHATKAN HANYA MOCHI SAJA) */}
+      {/* 2. BUBBLE CHAT PERTANYAAN DARI MOCHI (MINIMALIS & RINGKAS) */}
       <div
         onClick={() => setIsOpen(true)}
         style={{
-          left: `${Math.max(12, Math.min(window.innerWidth - 245, mochiPos.edge === 'right' ? mochiPos.x + (MOCHI_SIZE / 2) - 195 : mochiPos.x + (MOCHI_SIZE / 2) - 30))}px`,
-          top: `${Math.max(14, mochiPos.y - 68)}px`,
+          left: `${Math.max(12, Math.min(window.innerWidth - 210, mochiPos.edge === 'right' ? mochiPos.x + (MOCHI_SIZE / 2) - 155 : mochiPos.x + (MOCHI_SIZE / 2) - 25))}px`,
+          top: `${Math.max(14, mochiPos.y - 42)}px`,
           transition: isDraggingMochi
             ? 'none'
-            : 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease-out, transform 0.3s ease-out',
+            : 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.25s ease-out, transform 0.25s ease-out',
         }}
-        className={`fixed z-[70] cursor-pointer select-none transition-all duration-300 ease-out transform ${
+        className={`fixed z-[70] cursor-pointer select-none transition-all duration-250 ease-out transform ${
           !isOpen && !isDraggingMochi && (isBubbleVisible || isHoveringMochi)
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 scale-90 translate-y-2 pointer-events-none'
+            : 'opacity-0 scale-95 translate-y-1 pointer-events-none'
         }`}
-        title="Ketuk untuk membuka ruang obrolan Veritas AI"
+        title="Klik untuk membuka obrolan Veritas AI"
       >
-        <div className="relative bg-white/95 hover:bg-white text-slate-800 border border-amber-200/90 hover:border-amber-300 rounded-2xl px-3.5 py-2.5 shadow-[0_8px_24px_rgba(13,27,42,0.14)] backdrop-blur-md max-w-[225px] sm:max-w-[250px] group transition-all duration-200 hover:scale-[1.03] active:scale-95">
-          <div className="flex items-start gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#D4AF37] mt-1 shrink-0 animate-pulse" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-[#0D1B2A] leading-snug tracking-tight group-hover:text-[#8C6D1F] transition-colors">
-                {bubblePrompts[currentPromptIndex]}
-              </p>
-              <p className="text-[9.5px] font-medium text-slate-500 mt-0.5 flex items-center gap-1">
-                <span>Ketuk untuk bertanya</span>
-                <span className="text-[#8C6D1F] font-bold transition-transform group-hover:translate-x-0.5">→</span>
-              </p>
-            </div>
-          </div>
+        <div className="relative bg-white/95 hover:bg-white text-slate-700 hover:text-[#0D1B2A] border border-slate-200/90 hover:border-slate-300 rounded-full px-3.5 py-1.5 shadow-[0_2px_12px_rgba(13,27,42,0.08)] backdrop-blur-md flex items-center transition-all duration-150 hover:scale-[1.02] active:scale-98">
+          <span className="text-[11.5px] font-medium tracking-tight whitespace-nowrap">
+            {bubblePrompts[currentPromptIndex]}
+          </span>
 
-          {/* Ekor Segitiga Bubble yang menunjuk ke Mochi */}
+          {/* Ekor Halus Segitiga Menunjuk ke Arah Mochi */}
           <div
-            className={`absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-amber-200/90 group-hover:border-amber-300 transform rotate-45 ${
-              mochiPos.edge === 'right' ? 'right-7' : 'left-7'
+            className={`absolute -bottom-1 w-2 h-2 bg-white border-r border-b border-slate-200/90 transform rotate-45 ${
+              mochiPos.edge === 'right' ? 'right-6' : 'left-6'
             }`}
           />
         </div>
