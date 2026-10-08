@@ -1,0 +1,6 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.10"
+  }
+}
