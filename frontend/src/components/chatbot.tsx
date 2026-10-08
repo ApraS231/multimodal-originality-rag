@@ -48,18 +48,18 @@ const MOCHI_SIZE = 120;
 const MOCHI_STORAGE_KEY = 'veritas_mochi_position';
 
 const BUBBLE_PROMPTS_DEFAULT = [
-  'Butuh bantuan periksa naskah? ✨',
-  'Mau cek skor orisinalitas laporan? 📄',
-  'Ada yang ingin ditanyakan ke AI? 💬',
-  'Perlu penjelasan indikasi kemiripan? 🔍',
-  'Tanya apa saja seputar integritas naskah! 💡',
+  'Butuh bantuan periksa naskah?',
+  'Mau cek skor orisinalitas laporan?',
+  'Ada yang ingin ditanyakan ke Veritas AI?',
+  'Perlu penjelasan indikasi kemiripan?',
+  'Tanya seputar integritas akademik laporan.',
 ];
 
 const BUBBLE_PROMPTS_REPORT = [
-  'Ada yang perlu dicek dari naskah ini? 🧐',
-  'Mau rangkuman orisinalitas laporan ini? 📊',
-  'Bandingkan gambar grafik hasil praktikum? 🔍',
-  'Butuh evaluasi kesamaan segmen naskah? 💡',
+  'Ada yang perlu dicek dari naskah ini?',
+  'Mau rangkuman orisinalitas laporan ini?',
+  'Bandingkan teks atau grafik praktikum?',
+  'Butuh evaluasi kesamaan segmen naskah?',
 ];
 
 const getInitialMochiPosition = (): MochiPosition => {
@@ -476,6 +476,52 @@ export default function Chatbot({
     ? 'thinking'
     : (isTyping ? 'typing' : 'idle');
 
+  // Posisi Render Mochi:
+  // - Saat Chat Terbuka: Otomatis memposisikan diri secara estetik & TIDAK MENUTUPI panel chat
+  //   - Desktop: Berdiri manis di samping panel chat (di sebelah kiri jika chat di kanan)
+  //   - Mobile: Mengapung di atap panel chat (di atas header chat)
+  // - Saat Chat Tertutup: Mengikuti posisi bebas (mochiPos) yang dapat di-drag dan stick to edge
+  const getActiveMochiPosition = () => {
+    if (!isOpen) {
+      return {
+        x: mochiPos.x,
+        y: mochiPos.y,
+        scale: isDraggingMochi ? 1.05 : 1,
+      };
+    }
+
+    if (typeof window === 'undefined') {
+      return { x: mochiPos.x, y: mochiPos.y, scale: 1 };
+    }
+
+    const isDesktop = window.innerWidth >= 640;
+    const chatHeight = Math.min(530, window.innerHeight - 100);
+
+    if (isDesktop) {
+      // Panel Chat Desktop: lebar 410px, margin tepi 20px
+      if (mochiPos.edge === 'left') {
+        // Chat di kiri: Mochi berdiri di sebelah kanan panel chat
+        const targetX = 20 + 410 + 16;
+        const targetY = Math.max(70, window.innerHeight - MOCHI_SIZE - 24);
+        return { x: targetX, y: targetY, scale: 1 };
+      } else {
+        // Chat di kanan: Mochi berdiri manis di sebelah kiri panel chat
+        const targetX = Math.max(16, window.innerWidth - 410 - 20 - MOCHI_SIZE - 16);
+        const targetY = Math.max(70, window.innerHeight - MOCHI_SIZE - 24);
+        return { x: targetX, y: targetY, scale: 1 };
+      }
+    } else {
+      // Panel Chat Mobile: membentang di bawah layar
+      // Mochi memposisikan diri di atas atap panel chat (ruang kosong atas)
+      const chatTop = window.innerHeight - 16 - chatHeight;
+      const targetY = Math.max(10, chatTop - MOCHI_SIZE + 24);
+      const targetX = Math.max(12, window.innerWidth - MOCHI_SIZE - 16);
+      return { x: targetX, y: targetY, scale: 0.85 };
+    }
+  };
+
+  const activeMochiPos = getActiveMochiPosition();
+
   return (
     <>
       {/* 1. ROOM CHAT PANEL (Otomatis menyesuaikan orientasi terhadap posisi tepi Mochi) */}
@@ -870,7 +916,7 @@ export default function Chatbot({
         </div>
       </div>
 
-      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DRAGGABLE KE MANA SAJA + STICK TO EDGE) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DRAGGABLE KE MANA SAJA + POSISI ADAPTIF SAAT CHAT DIBUKA) */}
       <div 
         onPointerDown={handleMochiPointerDown}
         onPointerMove={handleMochiPointerMove}
@@ -882,17 +928,18 @@ export default function Chatbot({
         onMouseEnter={() => setIsHoveringMochi(true)}
         onMouseLeave={() => setIsHoveringMochi(false)}
         style={{
-          left: `${mochiPos.x}px`,
-          top: `${mochiPos.y}px`,
+          left: `${activeMochiPos.x}px`,
+          top: `${activeMochiPos.y}px`,
           touchAction: 'none',
           transition: isDraggingMochi 
             ? 'none' 
-            : 'left 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), transform 0.2s',
+            : 'left 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28), transform 0.3s ease-out',
           cursor: isDraggingMochi ? 'grabbing' : 'grab',
+          transform: `scale(${activeMochiPos.scale})`,
         }}
         className={`fixed z-[70] select-none filter drop-shadow-xl ${
           isDraggingMochi ? 'scale-105' : 'hover:scale-102 active:scale-95'
-        } ${isSideDrawerOpen && mochiPos.edge === 'right' ? 'md:right-[464px] max-md:hidden' : ''}`}
+        } ${isSideDrawerOpen && mochiPos.edge === 'right' && !isOpen ? 'md:right-[464px] max-md:hidden' : ''}`}
         title={isDraggingMochi ? "Tarik dan lepas untuk menempel ke tepi" : (isOpen ? "Klik maskot untuk menutup obrolan" : "Tarik bebas atau klik untuk membuka obrolan")}
       >
         <CoucouMochi
