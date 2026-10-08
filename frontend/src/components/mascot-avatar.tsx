@@ -19,8 +19,8 @@ export function MascotAvatar({
   showStatusDot = false,
   speechText,
   label = 'Veritas Mascot AI',
-  directionsUrl = '/mascots/crt-directions.webp',
-  reactionsUrl = '/mascots/crt-reactions.webp',
+  directionsUrl = '/mascots/mochi-directions.webp',
+  reactionsUrl = '/mascots/mochi-reactions.webp',
 }: MascotAvatarProps) {
   const [isHovered, setIsHovered] = useState(false);
 

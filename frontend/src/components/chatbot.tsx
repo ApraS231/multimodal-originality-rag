@@ -668,7 +668,7 @@ export default function Chatbot({
         </button>
       )}
 
-      {/* 3. MASKOT CRT YANG SELALU KOKOH (UKURAN 140px, OTOMATIS BERGESER RAMPING SAAT DRAWER TERBUKA) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF (UKURAN 135px, OTOMATIS BERGESER RAMPING SAAT DRAWER TERBUKA) */}
       <div 
         className={`fixed bottom-3 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
           isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
@@ -677,10 +677,10 @@ export default function Chatbot({
         title={isOpen ? "Klik maskot untuk menutup obrolan" : "Klik maskot untuk membuka obrolan"}
       >
         <Mascot
-          directions="/mascots/crt-directions.webp"
-          reactions="/mascots/crt-reactions.webp"
-          size={140}
-          label="Maskot CRT Veritas AI STITEK Bontang"
+          directions="/mascots/mochi-directions.webp"
+          reactions="/mascots/mochi-reactions.webp"
+          size={135}
+          label="Maskot Mochi Veritas AI STITEK Bontang"
         />
 
         {/* Titik Indikator Status Online AI */}
