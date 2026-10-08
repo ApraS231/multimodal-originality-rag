@@ -4,6 +4,7 @@ import { Send, ShieldCheck, RotateCcw, Minimize2, History, Trash2, Plus, Message
 import { Mascot } from 'page-mascot';
 import MarkdownView from './ui/markdown-view';
 import { useSession } from '../api/auth';
+import { Logo } from './ui/logo';
 
 interface ChatMessage {
   id_pesan_obrolan: string;
@@ -310,6 +311,7 @@ export default function Chatbot({
           <div className="px-4 py-3 bg-[#0D1B2A] border-b border-slate-800 flex justify-between items-center shrink-0">
             <div>
               <div className="flex items-center gap-2">
+                <Logo size={16} variant="brass" />
                 <h3 className="text-xs font-semibold text-slate-100 uppercase tracking-wider">{title}</h3>
                 <span className="w-2 h-2 rounded-full bg-[#415A77]/100 inline-block shadow-xs" title="Layanan AI Aktif" />
               </div>
@@ -473,9 +475,7 @@ export default function Chatbot({
               ) : !hasMessages ? (
                 /* State Kosong Bersih dengan Kartu Pemandu & Saran Cepat */
                 <div className="flex flex-col items-center justify-center py-5 px-3 text-center">
-                  <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#8C6D1F] mb-2.5 shadow-xs">
-                    <ShieldCheck className="w-4.5 h-4.5" />
-                  </div>
+                  <Logo size={36} variant="badge" className="mb-2.5" />
                   <h4 className="text-xs font-bold text-[#0D1B2A] tracking-tight">Veritas AI Copilot</h4>
                   <p className="text-[11px] text-slate-500 mt-1 max-w-[280px] leading-relaxed">
                     {idLaporan 

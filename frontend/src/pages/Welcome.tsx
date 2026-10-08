@@ -22,6 +22,7 @@ import TypewriterText from '../components/ui/typewriter-text';
 import ScrollReveal from '../components/ui/scroll-reveal';
 import CurvedTransition from '../components/ui/curved-transition';
 import { Button } from '../components/ui/button';
+import { Logo } from '../components/ui/logo';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -216,11 +217,7 @@ export default function Welcome() {
         
         {/* Struktur Kiri: Brand Block */}
         <div className="flex items-center gap-3">
-          {/* Logo V */}
-          <div className="font-brutalism text-2xl font-black text-[#0D1B2A] tracking-tighter select-none border-2 border-[#0D1B2A] px-2 py-0.5 rounded-sm shadow-[2px_2px_0px_#D4AF37]">
-            V
-          </div>
-          
+          <Logo size={40} variant="badge" />
           <div className="hidden sm:flex flex-col text-left leading-tight">
             <span className="font-brutalism font-black text-xs text-[#0D1B2A] tracking-wider">VERITAS</span>
             <span className="text-[10px] font-mono text-[#415A77] font-semibold">STITEK BONTANG</span>
@@ -659,8 +656,11 @@ export default function Welcome() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full text-center py-6 text-[10px] text-[#415A77] border-t-2 border-[#0D1B2A] bg-white/40 font-mono select-none z-20">
-        © {new Date().getFullYear()} Sekolah Tinggi Teknologi Bontang. Sistem Deteksi Orisinalitas Laporan Praktikum.
+      <footer className="w-full py-8 text-[11px] text-[#415A77] border-t-2 border-[#0D1B2A] bg-white/60 font-mono select-none z-20 flex flex-col items-center justify-center gap-2.5">
+        <Logo size={24} variant="transparent" />
+        <div className="text-center px-4">
+          © {new Date().getFullYear()} Sekolah Tinggi Teknologi Bontang. Sistem Deteksi Orisinalitas Laporan Praktikum.
+        </div>
       </footer>
 
       {/* Curved Box Wipe Transition Overlay (Welcome -> Login) */}

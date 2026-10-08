@@ -20,6 +20,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/toast-provider';
 import CurvedTransition from '../components/ui/curved-transition';
+import { Logo } from '../components/ui/logo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -265,9 +266,7 @@ export default function Login() {
             {/* Header Brand Terpadu */}
             <div className="text-center space-y-2">
               <div className="flex items-center justify-center gap-3">
-                <div className="w-10 h-10 bg-[#0D1B2A] rounded flex items-center justify-center font-brutalism text-xl font-black text-[#F7F3E9] border-2 border-[#0D1B2A] shadow-[2px_2px_0px_#D4AF37] shrink-0">
-                  V
-                </div>
+                <Logo size={42} variant="badge" />
                 <div className="flex flex-col text-left leading-tight">
                   <span className="text-base font-brutalism font-black tracking-tight text-[#0D1B2A] uppercase">VERITAS</span>
                   <span className="text-[10px] font-semibold text-[#415A77] uppercase tracking-wider font-mono">STITEK BONTANG</span>
@@ -540,8 +539,9 @@ export default function Login() {
       </div>
 
       {/* Footer Hak Cipta Ringkas */}
-      <div className="w-full text-center py-2 text-[11px] text-[#0D1B2A] font-mono font-bold relative z-10">
-        © 2026 VERITAS • STITEK Bontang
+      <div className="w-full text-center py-2 text-[11px] text-[#0D1B2A] font-mono font-bold relative z-10 flex items-center justify-center gap-2">
+        <Logo size={16} variant="transparent" />
+        <span>© 2026 VERITAS • STITEK Bontang</span>
       </div>
 
       {/* Curved Box Wipe Out Transition Overlay (Revealing Login) */}

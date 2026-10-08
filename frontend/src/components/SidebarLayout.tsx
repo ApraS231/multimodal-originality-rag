@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Menu, X } from 'lucide-react';
 import Chatbot from './chatbot';
+import { Logo } from './ui/logo';
 
 export default function SidebarLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function SidebarLayout() {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="font-bold text-sm tracking-tight text-slate-900">VERITAS</div>
+          <Logo size={28} showText variant="badge" />
         </div>
       </div>
 
