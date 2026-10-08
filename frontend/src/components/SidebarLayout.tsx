@@ -9,7 +9,7 @@ export default function SidebarLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-[#F7F3E9] overflow-hidden flex font-sans text-[#0D1B2A]">
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F3E9] flex font-sans text-[#0D1B2A]">
 
       {/* Desktop Sidebar (hidden on mobile) */}
       <div className="hidden lg:flex">
@@ -52,8 +52,8 @@ export default function SidebarLayout() {
         </>
       )}
 
-      {/* Konten Halaman Sebelah Kanan */}
-      <main className="flex-1 h-screen overflow-y-auto relative pt-14 lg:pt-0">
+      {/* Konten Halaman Sebelah Kanan (Satu-satunya area dengan scrollbar) */}
+      <main className="flex-1 h-full overflow-y-auto relative pt-14 lg:pt-0">
         <Outlet />
       </main>
 

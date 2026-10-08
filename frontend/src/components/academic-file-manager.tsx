@@ -18,19 +18,13 @@ import {
   X, 
   ArrowLeft, 
   MoreVertical, 
-  CheckCircle2, 
-  Clock, 
-  FileCode, 
-  FileSpreadsheet, 
-  Image as ImageIcon,
-  ShieldAlert,
-  FolderPlus,
-  UploadCloud
+  FolderOpen,
+  UploadCloud,
+  FolderPlus
 } from 'lucide-react';
 import { useToast } from './ui/toast-provider';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import StatusBadge from './ui/status-badge';
 import LoadingSpinner from './ui/loading-spinner';
 import EmptyState from './ui/empty-state';
 import { 
@@ -70,101 +64,32 @@ export interface AcademicFileManagerProps {
   subtitle?: string;
 }
 
-// Palet warna kurasi untuk folder kartu visual (sesuai referensi Screenshot 1, 2, 3)
 export type FolderColor = 'slate' | 'amber' | 'blue' | 'mint' | 'purple' | 'lime' | 'rose' | 'brass';
 
 interface ColorDefinition {
   id: FolderColor;
   label: string;
   hex: string;
-  fill: string;
-  border: string;
-  text: string;
-  badge: string;
 }
 
 export const FOLDER_COLORS: Record<FolderColor, ColorDefinition> = {
-  slate: {
-    id: 'slate',
-    label: 'Slate Grey',
-    hex: '#64748B',
-    fill: '#F1F5F9',
-    border: '#94A3B8',
-    text: '#334155',
-    badge: 'bg-slate-100 text-slate-700 border-slate-300'
-  },
-  amber: {
-    id: 'amber',
-    label: 'Warm Amber',
-    hex: '#F59E0B',
-    fill: '#FEF3C7',
-    border: '#F59E0B',
-    text: '#B45309',
-    badge: 'bg-amber-100 text-amber-800 border-amber-300'
-  },
-  blue: {
-    id: 'blue',
-    label: 'Ocean Blue',
-    hex: '#0284C7',
-    fill: '#E0F2FE',
-    border: '#0284C7',
-    text: '#0369A1',
-    badge: 'bg-sky-100 text-sky-800 border-sky-300'
-  },
-  mint: {
-    id: 'mint',
-    label: 'Mint Emerald',
-    hex: '#10B981',
-    fill: '#D1FAE5',
-    border: '#10B981',
-    text: '#047857',
-    badge: 'bg-emerald-100 text-emerald-800 border-emerald-300'
-  },
-  purple: {
-    id: 'purple',
-    label: 'Soft Violet',
-    hex: '#8B5CF6',
-    fill: '#EDE9FE',
-    border: '#8B5CF6',
-    text: '#6D28D9',
-    badge: 'bg-purple-100 text-purple-800 border-purple-300'
-  },
-  lime: {
-    id: 'lime',
-    label: 'Fresh Lime',
-    hex: '#84CC16',
-    fill: '#ECFCCB',
-    border: '#84CC16',
-    text: '#4D7C0F',
-    badge: 'bg-lime-100 text-lime-800 border-lime-300'
-  },
-  rose: {
-    id: 'rose',
-    label: 'Crimson Rose',
-    hex: '#F43F5E',
-    fill: '#FFE4E6',
-    border: '#F43F5E',
-    text: '#BE123C',
-    badge: 'bg-rose-100 text-rose-800 border-rose-300'
-  },
-  brass: {
-    id: 'brass',
-    label: 'STITEK Brass',
-    hex: '#D4AF37',
-    fill: '#FDF8E7',
-    border: '#D4AF37',
-    text: '#927012',
-    badge: 'bg-amber-50 text-amber-900 border-amber-400'
-  }
+  slate: { id: 'slate', label: 'Slate', hex: '#64748B' },
+  amber: { id: 'amber', label: 'Amber', hex: '#F59E0B' },
+  blue: { id: 'blue', label: 'Blue', hex: '#0284C7' },
+  mint: { id: 'mint', label: 'Mint', hex: '#10B981' },
+  purple: { id: 'purple', label: 'Violet', hex: '#8B5CF6' },
+  lime: { id: 'lime', label: 'Lime', hex: '#84CC16' },
+  rose: { id: 'rose', label: 'Rose', hex: '#F43F5E' },
+  brass: { id: 'brass', label: 'Brass', hex: '#D4AF37' }
 };
 
-// SVG Ikon Folder Kustom dengan Bilangan Hitung Terbaca (Seperti Screenshot 1 & 2)
+// SVG Ikon Folder Minimalis dengan Angka Jumlah Berkas di Tengah
 function NumberedFolderGraphic({ count, colorHex }: { count: number; colorHex: string }) {
   return (
-    <div className="relative w-28 h-20 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 select-none">
+    <div className="relative w-22 h-16 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 select-none py-1">
       <svg 
         viewBox="0 0 108 84" 
-        className="w-full h-full filter drop-shadow-xs" 
+        className="w-full h-full filter drop-shadow-2xs" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -172,21 +97,21 @@ function NumberedFolderGraphic({ count, colorHex }: { count: number; colorHex: s
         <path 
           d="M 12 16 C 12 11, 16 7, 21 7 L 44 7 C 48 7, 51 9, 53 12 L 58 18 L 88 18 C 93 18, 97 22, 97 27 L 97 68 C 97 73, 93 77, 88 77 L 21 77 C 16 77, 12 73, 12 68 Z" 
           fill={colorHex} 
-          fillOpacity="0.82" 
+          fillOpacity="0.85" 
         />
         {/* Saku Depan Folder */}
         <path 
           d="M 8 28 C 8 23, 12 19, 17 19 L 91 19 C 96 19, 100 23, 100 28 L 98 69 C 98 74, 94 78, 89 78 L 19 78 C 14 78, 10 74, 10 69 Z" 
           fill={colorHex} 
         />
-        {/* Garis Kilap Lembut di Bibir Saku */}
+        {/* Garis Kilap Halus */}
         <path 
           d="M 18 21 L 90 21" 
-          stroke="rgba(255,255,255,0.35)" 
+          stroke="rgba(255,255,255,0.4)" 
           strokeWidth="1.5" 
           strokeLinecap="round" 
         />
-        {/* Angka Jumlah Berkas di Tengah Folder */}
+        {/* Angka Hitung Berkas */}
         <text 
           x="54" 
           y="56" 
@@ -194,8 +119,7 @@ function NumberedFolderGraphic({ count, colorHex }: { count: number; colorHex: s
           fill="#FFFFFF" 
           fontWeight="800" 
           fontSize="24" 
-          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-          letterSpacing="-0.5px"
+          fontFamily="system-ui, -apple-system, sans-serif"
         >
           {count}
         </text>
@@ -204,49 +128,23 @@ function NumberedFolderGraphic({ count, colorHex }: { count: number; colorHex: s
   );
 }
 
-// Ikon Badge Dokumen Berkas (PDF, DOCX, XLS, JPG)
-function FileTypeBadge({ name, score }: { name: string; score?: number }) {
-  const ext = name.split('.').pop()?.toLowerCase() || 'pdf';
-
-  if (ext === 'xlsx' || ext === 'xls') {
-    return (
-      <div className="w-16 h-20 rounded-lg border-2 border-slate-700 bg-white flex flex-col items-center justify-between p-2 shadow-2xs group-hover:scale-105 transition-transform">
-        <FileSpreadsheet className="w-5 h-5 text-slate-700 mt-1" />
-        <span className="font-bold text-[10px] tracking-wider text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded font-mono">XLS</span>
-      </div>
-    );
-  }
-
-  if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
-    return (
-      <div className="w-16 h-20 rounded-lg border-2 border-rose-500 bg-white flex flex-col items-center justify-between p-2 shadow-2xs group-hover:scale-105 transition-transform">
-        <ImageIcon className="w-5 h-5 text-rose-500 mt-1" />
-        <span className="font-bold text-[10px] tracking-wider text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded font-mono">JPG</span>
-      </div>
-    );
-  }
-
-  if (ext === 'py' || ext === 'ts' || ext === 'js') {
-    return (
-      <div className="w-16 h-20 rounded-lg border-2 border-indigo-600 bg-white flex flex-col items-center justify-between p-2 shadow-2xs group-hover:scale-105 transition-transform">
-        <FileCode className="w-5 h-5 text-indigo-600 mt-1" />
-        <span className="font-bold text-[10px] tracking-wider text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-mono">CODE</span>
-      </div>
-    );
-  }
-
-  // Default: Dokumen Akademik Laporan PDF
+// Ikon Badge Berkas Dokumen Minimalis
+function MinimalistFileGraphic({ score }: { score?: number }) {
   return (
-    <div className="w-16 h-20 rounded-lg border-2 border-rose-600/90 bg-white flex flex-col items-center justify-between p-2 shadow-2xs group-hover:scale-105 transition-transform relative">
-      <FileText className="w-5 h-5 text-rose-600 mt-1" />
-      <span className="font-bold text-[10px] tracking-wider text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded font-mono">PDF</span>
+    <div className="flex flex-col items-center justify-center py-1">
+      <div className="w-13 h-15 rounded-xl bg-rose-50/70 border border-rose-200/90 flex flex-col items-center justify-center relative shadow-2xs group-hover:scale-105 transition-transform">
+        <FileText className="w-5.5 h-5.5 text-rose-600 stroke-[1.8]" />
+        <span className="text-[8.5px] font-extrabold font-mono text-rose-700 tracking-wider mt-0.5">PDF</span>
+      </div>
       {score !== undefined && (
         <span 
-          className={`absolute -top-1.5 -right-2 text-[8.5px] font-bold px-1.5 py-0.2 rounded-full border shadow-2xs font-mono ${
-            score >= 75 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'
+          className={`text-[9.5px] font-mono font-bold px-2 py-0.2 rounded-full border shadow-2xs mt-1.5 ${
+            score >= 75 
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/90' 
+              : 'bg-rose-50 text-rose-700 border-rose-200/90'
           }`}
         >
-          {score.toFixed(0)}%
+          {score.toFixed(0)}% Orisinal
         </span>
       )}
     </div>
@@ -258,9 +156,7 @@ export default function AcademicFileManager({
   navData = [],
   isLoading = false,
   onSelectLaporan,
-  className = '',
-  title = 'Manajemen Direktori Laporan',
-  subtitle = 'Kelola struktur folder akademik, kelas bimbingan praktikum, dan naskah orisinalitas.'
+  className = ''
 }: AcademicFileManagerProps) {
   const toast = useToast();
   const navigate = useNavigate();
@@ -268,8 +164,7 @@ export default function AcademicFileManager({
   // Mode Tampilan: Grid (▦) atau List (≡)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Navigasi Jalur Folder (Breadcrumb Drill-down)
-  // path[0] adalah root ("Direktori Utama")
+  // Breadcrumbs Trail
   const [currentPath, setCurrentPath] = useState<{ id: string; name: string; type: 'root' | 'prodi' | 'matkul' | 'kelas' }[]>([
     { id: 'root', name: 'Direktori Utama', type: 'root' }
   ]);
@@ -282,27 +177,24 @@ export default function AcademicFileManager({
 
   // Custom Metadata (Warna Folder & Status) - Disimpan di localStorage
   const [folderColors, setFolderColors] = useState<Record<string, FolderColor>>({});
-  const [folderStatuses, setFolderStatuses] = useState<Record<string, 'Inprogress' | 'Completed'>>({});
   const [lockedFolders, setLockedFolders] = useState<Record<string, boolean>>({});
 
   // Menu Konteks Popover (3-Dots)
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // State Modal Tambah Folder Baru (Hanya Admin)
+  // Modal Tambah Folder Baru (Hanya Admin)
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderType, setNewFolderType] = useState<'prodi' | 'matkul' | 'kelas'>('prodi');
 
-  // State Inline Edit Nama (Hanya Admin)
+  // Inline Rename (Hanya Admin)
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingItemName, setEditingItemName] = useState('');
 
-  // Status Hak Akses
   const isAdmin = role === 'ADMIN';
-  const isViewOnly = !isAdmin; // Aslab hanya View
 
-  // Query Mutations (Admin Only)
+  // Mutations
   const createProdiMutation = useCreateProdi();
   const updateProdiMutation = useUpdateProdi();
   const deleteProdiMutation = useDeleteProdi();
@@ -317,31 +209,22 @@ export default function AcademicFileManager({
 
   const deleteReportMutation = useDeleteReport();
 
-  // Load custom colors & statuses from localStorage
+  // Load persisted colors from localStorage
   useEffect(() => {
     try {
       const savedColors = localStorage.getItem('stitek_filemanager_colors');
       if (savedColors) setFolderColors(JSON.parse(savedColors));
 
-      const savedStatuses = localStorage.getItem('stitek_filemanager_statuses');
-      if (savedStatuses) setFolderStatuses(JSON.parse(savedStatuses));
-
       const savedLocks = localStorage.getItem('stitek_filemanager_locks');
       if (savedLocks) setLockedFolders(JSON.parse(savedLocks));
     } catch {
-      // ignore
+      // noop
     }
   }, []);
 
-  // Save changes to localStorage
   const saveColors = (newColors: Record<string, FolderColor>) => {
     setFolderColors(newColors);
     localStorage.setItem('stitek_filemanager_colors', JSON.stringify(newColors));
-  };
-
-  const saveStatuses = (newStatuses: Record<string, 'Inprogress' | 'Completed'>) => {
-    setFolderStatuses(newStatuses);
-    localStorage.setItem('stitek_filemanager_statuses', JSON.stringify(newStatuses));
   };
 
   const saveLocks = (newLocks: Record<string, boolean>) => {
@@ -349,7 +232,7 @@ export default function AcademicFileManager({
     localStorage.setItem('stitek_filemanager_locks', JSON.stringify(newLocks));
   };
 
-  // Close context menu when clicking outside
+  // Close context menu on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -360,9 +243,9 @@ export default function AcademicFileManager({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Helper untuk mendapatkan node saat ini berdasarkan `currentPath`
+  // Current node in tree
   const currentNode = useMemo(() => {
-    if (currentPath.length <= 1) return null; // di root
+    if (currentPath.length <= 1) return null;
 
     let currentChildren = navData;
     let foundNode: NavItem | null = null;
@@ -381,23 +264,20 @@ export default function AcademicFileManager({
     return foundNode;
   }, [currentPath, navData]);
 
-  // Mengumpulkan item yang ditampilkan di folder saat ini
+  // Displayed items in current folder view
   const displayedItems = useMemo(() => {
     let rawItems: NavItem[] = [];
 
     if (currentPath.length === 1) {
-      // Root level: tampilkan Prodi
       rawItems = navData;
     } else if (currentNode && currentNode.children) {
       rawItems = currentNode.children;
     }
 
-    // Filter kategori jika dipilih
     if (activeCategory !== 'ALL') {
       rawItems = rawItems.filter(item => item.type === activeCategory);
     }
 
-    // Pencarian global atau lokal
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       rawItems = rawItems.filter(item => {
@@ -410,22 +290,18 @@ export default function AcademicFileManager({
     return rawItems;
   }, [currentPath, currentNode, navData, activeCategory, searchTerm]);
 
-  // Menghitung jumlah berkas rekursif di bawah suatu folder
   const countFilesInNode = (node: NavItem): number => {
     if (node.type === 'laporan') return 1;
     if (!node.children || node.children.length === 0) return 0;
     return node.children.reduce((acc, child) => acc + countFilesInNode(child), 0);
   };
 
-  // Mendapatkan warna folder (default atau kustom)
   const getItemColor = (item: NavItem, idx: number): FolderColor => {
     if (folderColors[item.id]) return folderColors[item.id];
-    // Default warna berputar agar variatif dan cantik seperti Screenshot 1
     const palette: FolderColor[] = ['amber', 'blue', 'mint', 'purple', 'slate', 'lime', 'rose', 'brass'];
     return palette[idx % palette.length];
   };
 
-  // Navigasi masuk ke dalam folder
   const handleOpenFolder = (item: NavItem) => {
     if (item.type === 'laporan') {
       if (onSelectLaporan) onSelectLaporan(item.id);
@@ -437,7 +313,6 @@ export default function AcademicFileManager({
     setActiveMenuId(null);
   };
 
-  // Navigasi mundur (Breadcrumbs)
   const handleGoBack = () => {
     if (currentPath.length > 1) {
       setCurrentPath(prev => prev.slice(0, prev.length - 1));
@@ -450,71 +325,52 @@ export default function AcademicFileManager({
     setActiveMenuId(null);
   };
 
-  // Handler Salin Lokasi
   const handleCopyLink = (item: NavItem) => {
     navigator.clipboard.writeText(window.location.origin + `/aslab/view/${item.id}`);
-    toast.success('Tautan Tersalin', `Lokasi tautan "${item.name}" telah disalin ke papan klip.`);
+    toast.success('Tautan Tersalin', `Lokasi tautan "${item.name}" berhasil disalin.`);
     setActiveMenuId(null);
   };
 
-  // Handler Unduh Berkas / Arsip
   const handleDownload = (item: NavItem) => {
     if (item.tautan_berkas) {
       window.open(item.tautan_berkas, '_blank');
     } else {
-      toast.info('Unduh Arsip', `Menyiapkan arsip ZIP untuk "${item.name}"...`);
+      toast.info('Unduh Berkas', `Menyiapkan unduhan "${item.name}"...`);
     }
     setActiveMenuId(null);
   };
 
-  // Handler Ganti Warna (ADMIN ONLY)
   const handleChangeColor = (itemId: string, newColor: FolderColor) => {
     if (!isAdmin) return;
     const updated = { ...folderColors, [itemId]: newColor };
     saveColors(updated);
-    toast.success('Warna Diperbarui', `Warna folder berhasil diselaraskan ke ${FOLDER_COLORS[newColor].label}.`);
+    toast.success('Warna Diperbarui', `Warna folder disetel ke ${FOLDER_COLORS[newColor].label}.`);
   };
 
-  // Handler Ganti Status (ADMIN ONLY)
-  const handleChangeStatus = (itemId: string, newStatus: 'Inprogress' | 'Completed') => {
-    if (!isAdmin) return;
-    const updated = { ...folderStatuses, [itemId]: newStatus };
-    saveStatuses(updated);
-    toast.success('Status Diperbarui', `Status folder disetel ke "${newStatus}".`);
-  };
-
-  // Handler Kunci / Buka Kunci (ADMIN ONLY)
   const handleToggleLock = (itemId: string) => {
     if (!isAdmin) return;
     const updated = { ...lockedFolders, [itemId]: !lockedFolders[itemId] };
     saveLocks(updated);
-    toast.info('Proteksi Folder', updated[itemId] ? 'Folder berhasil dikunci.' : 'Kunci folder telah dibuka.');
+    toast.info('Proteksi Folder', updated[itemId] ? 'Folder dikunci.' : 'Kunci folder dibuka.');
   };
 
-  // Handler Hapus Folder / Berkas (ADMIN ONLY)
   const handleDeleteItem = async (item: NavItem) => {
     if (!isAdmin) return;
-    const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus "${item.name}"?`);
+    const confirmDelete = window.confirm(`Hapus "${item.name}" dari direktori?`);
     if (!confirmDelete) return;
 
     try {
-      if (item.type === 'prodi') {
-        await deleteProdiMutation.mutateAsync(item.id);
-      } else if (item.type === 'matkul') {
-        await deleteMatkulMutation.mutateAsync(item.id);
-      } else if (item.type === 'kelas') {
-        await deleteKelasMutation.mutateAsync(item.id);
-      } else if (item.type === 'laporan') {
-        await deleteReportMutation.mutateAsync(item.id);
-      }
-      toast.success('Item Dihapus', `"${item.name}" berhasil dihapus dari direktori.`);
+      if (item.type === 'prodi') await deleteProdiMutation.mutateAsync(item.id);
+      else if (item.type === 'matkul') await deleteMatkulMutation.mutateAsync(item.id);
+      else if (item.type === 'kelas') await deleteKelasMutation.mutateAsync(item.id);
+      else if (item.type === 'laporan') await deleteReportMutation.mutateAsync(item.id);
+      toast.success('Berhasil Dihapus', `"${item.name}" telah dihapus.`);
       setActiveMenuId(null);
     } catch (err: any) {
-      toast.error('Gagal Menghapus', err.message || 'Terjadi galat pada server.');
+      toast.error('Gagal Menghapus', err.message || 'Terjadi galat.');
     }
   };
 
-  // Handler Rename Simpan (ADMIN ONLY)
   const handleSaveRename = async (item: NavItem) => {
     if (!isAdmin || !editingItemName.trim()) {
       setEditingItemId(null);
@@ -522,21 +378,16 @@ export default function AcademicFileManager({
     }
 
     try {
-      if (item.type === 'prodi') {
-        await updateProdiMutation.mutateAsync({ id: item.id, nama_prodi: editingItemName.trim() });
-      } else if (item.type === 'matkul') {
-        await updateMatkulMutation.mutateAsync({ id: item.id, nama_matkul: editingItemName.trim() });
-      } else if (item.type === 'kelas') {
-        await updateKelasMutation.mutateAsync({ id_kelas: item.id, nama_kelas: editingItemName.trim() });
-      }
-      toast.success('Nama Diperbarui', `Nama berhasil diubah menjadi "${editingItemName.trim()}".`);
+      if (item.type === 'prodi') await updateProdiMutation.mutateAsync({ id: item.id, nama_prodi: editingItemName.trim() });
+      else if (item.type === 'matkul') await updateMatkulMutation.mutateAsync({ id: item.id, nama_matkul: editingItemName.trim() });
+      else if (item.type === 'kelas') await updateKelasMutation.mutateAsync({ id_kelas: item.id, nama_kelas: editingItemName.trim() });
+      toast.success('Nama Diperbarui', `Nama berhasil disimpan.`);
       setEditingItemId(null);
     } catch (err: any) {
-      toast.error('Gagal Memperbarui Nama', err.message || 'Terjadi kesalahan sistem.');
+      toast.error('Gagal Memperbarui', err.message || 'Terjadi galat.');
     }
   };
 
-  // Handler Tambah Folder Baru (ADMIN ONLY)
   const handleCreateNewFolder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAdmin || !newFolderName.trim()) return;
@@ -553,7 +404,7 @@ export default function AcademicFileManager({
           id_program_studi: parentProdiId
         });
       }
-      toast.success('Folder Dibuat', `Folder baru "${newFolderName.trim()}" berhasil ditambahkan.`);
+      toast.success('Folder Dibuat', `Folder baru "${newFolderName.trim()}" ditambahkan.`);
       setIsNewFolderModalOpen(false);
       setNewFolderName('');
     } catch (err: any) {
@@ -562,212 +413,154 @@ export default function AcademicFileManager({
   };
 
   return (
-    <div className={`space-y-6 ${className} font-sans text-[#0D1B2A]`}>
-      {/* 1. HEADER ATAS & TAB NAVIGASI (Persis Screenshot 1) */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
-        {/* Baris Judul & Tombol Kembali */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
+    <div className={`space-y-4 ${className} font-sans text-[#0D1B2A]`}>
+      {/* 1. HEADER FILE MANAGER MINIMALIS & BERSIH (1 Baris Utama + 1 Baris Kategori) */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-3">
+        {/* Baris 1: Breadcrumbs Trail & Tools */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          {/* Navigasi Breadcrumbs */}
+          <div className="flex items-center gap-2 flex-wrap text-xs">
             {currentPath.length > 1 && (
               <button
                 type="button"
                 onClick={handleGoBack}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer mr-0.5"
                 title="Kembali ke folder sebelumnya"
               >
-                <ArrowLeft className="w-4.5 h-4.5" />
+                <ArrowLeft className="w-3.5 h-3.5" />
               </button>
             )}
-            <div>
-              <h2 className="text-lg font-bold text-[#0D1B2A] tracking-tight flex items-center gap-2">
-                <span>{title}</span>
-                {isViewOnly && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                    Mode Tinjau (View Only)
-                  </span>
-                )}
-                {isAdmin && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Akses Admin (Full Edit)
-                  </span>
-                )}
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {currentPath.map((crumb, idx) => (
+                <React.Fragment key={crumb.id}>
+                  {idx > 0 && <span className="text-slate-300 font-mono">/</span>}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigatePathIndex(idx)}
+                    className={`px-2 py-1 rounded hover:bg-slate-100 transition-colors cursor-pointer truncate max-w-[170px] ${
+                      idx === currentPath.length - 1 
+                        ? 'font-bold text-[#0D1B2A] bg-slate-100 text-xs' 
+                        : 'text-slate-500 hover:text-slate-800 text-xs'
+                    }`}
+                  >
+                    {crumb.name}
+                  </button>
+                </React.Fragment>
+              ))}
             </div>
+
+            <span className="text-[11px] font-mono text-slate-400 ml-1">
+              ({displayedItems.length} item)
+            </span>
           </div>
 
-          {/* Breadcrumb Path Trail */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 overflow-x-auto max-w-full pb-1 sm:pb-0">
-            {currentPath.map((crumb, idx) => (
-              <React.Fragment key={crumb.id}>
-                {idx > 0 && <span className="text-slate-300">/</span>}
-                <button
-                  type="button"
-                  onClick={() => handleNavigatePathIndex(idx)}
-                  className={`px-2 py-1 rounded hover:bg-slate-100 transition-colors cursor-pointer truncate max-w-[150px] ${
-                    idx === currentPath.length - 1 ? 'font-bold text-[#0D1B2A] bg-slate-100' : 'text-slate-600'
-                  }`}
-                >
-                  {crumb.name}
-                </button>
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-
-        {/* Baris Tab Kategori (Case Info / Assessment Plans / Manage Documents) */}
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => setActiveCategory('ALL')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeCategory === 'ALL'
-                ? 'bg-[#0D1B2A] text-white shadow-2xs font-semibold'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Semua Direktori
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('prodi')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeCategory === 'prodi'
-                ? 'bg-[#0D1B2A] text-white shadow-2xs font-semibold'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Program Studi
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('matkul')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeCategory === 'matkul'
-                ? 'bg-[#0D1B2A] text-white shadow-2xs font-semibold'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Mata Kuliah
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('kelas')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeCategory === 'kelas'
-                ? 'bg-[#0D1B2A] text-white shadow-2xs font-semibold'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Kelas Praktikum
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('laporan')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeCategory === 'laporan'
-                ? 'bg-[#0D1B2A] text-white shadow-2xs font-semibold'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Naskah Laporan
-          </button>
-        </div>
-
-        {/* 2. ACTION TOOLBAR (Pencarian, Switcher Grid/List, & Tombol Tambah HANYA ADMIN) */}
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-1">
-          {/* Tombol Tambah Folder & Berkas: HANYA TAMPIL UNTUK ADMIN */}
-          <div className="flex items-center gap-2">
-            {isAdmin ? (
+          {/* Sisi Kanan: Pencarian, Switcher View, & Tombol Admin */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {isAdmin && (
               <>
                 <Button
-                  onClick={() => {
-                    const currentDepthType = currentPath[currentPath.length - 1].type;
-                    if (currentDepthType === 'root') setNewFolderType('prodi');
-                    else if (currentDepthType === 'prodi') setNewFolderType('matkul');
-                    else setNewFolderType('kelas');
-                    setIsNewFolderModalOpen(true);
-                  }}
+                  onClick={() => setIsNewFolderModalOpen(true)}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 border-slate-300 hover:border-slate-400 text-xs text-slate-800 font-semibold"
+                  className="h-8 gap-1 text-[11px] font-semibold border-slate-300"
                 >
-                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>+ Folder Baru</span>
+                  <Plus className="w-3 h-3 text-emerald-600" />
+                  <span>Folder</span>
                 </Button>
                 <Button
                   onClick={() => navigate('/admin/seeding')}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 border-slate-300 hover:border-slate-400 text-xs text-slate-800 font-semibold"
+                  className="h-8 gap-1 text-[11px] font-semibold border-slate-300"
                 >
-                  <UploadCloud className="w-3.5 h-3.5 text-sky-600" />
-                  <span>+ Tambah Berkas</span>
+                  <UploadCloud className="w-3 h-3 text-sky-600" />
+                  <span>Unggah</span>
                 </Button>
               </>
-            ) : (
-              // Untuk Aslab: Label indikator mode peninjauan
-              <div className="flex items-center gap-2 text-xs text-slate-500 py-1">
-                <Folder className="w-4 h-4 text-[#D4AF37]" />
-                <span className="font-medium text-slate-700">Penjelajahan Berkas Bimbingan Praktikum</span>
-              </div>
             )}
-          </div>
 
-          {/* Kotak Pencarian & View Switcher (List vs Grid) */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative w-full sm:w-64">
+            {/* Kotak Pencarian Minimalis */}
+            <div className="relative w-full sm:w-56">
               <Input
                 type="text"
-                placeholder="Cari nama berkas / NIM..."
+                placeholder="Cari naskah / NIM..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-9 text-xs pl-8 pr-3 bg-white border-slate-200 rounded-lg focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                className="h-8 text-xs pl-7 pr-3 bg-slate-50/70 border-slate-200 rounded-lg focus:border-[#D4AF37] focus:bg-white transition-all font-sans"
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
               )}
             </div>
 
-            {/* Tombol Pengalih Tampilan (List & Grid) */}
+            {/* Switcher Tampilan Grid / List */}
             <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0">
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded transition-all cursor-pointer ${
+                className={`p-1 rounded transition-all cursor-pointer ${
                   viewMode === 'list'
-                    ? 'bg-white shadow-2xs text-emerald-700 font-bold'
+                    ? 'bg-white shadow-2xs text-[#0D1B2A] font-bold'
                     : 'text-slate-400 hover:text-slate-600'
                 }`}
-                title="Tampilan Tabel Berkas (List View)"
+                title="Tabel Berkas"
               >
-                <ListIcon className="w-4 h-4" />
+                <ListIcon className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded transition-all cursor-pointer ${
+                className={`p-1 rounded transition-all cursor-pointer ${
                   viewMode === 'grid'
-                    ? 'bg-white shadow-2xs text-emerald-700 font-bold'
+                    ? 'bg-white shadow-2xs text-[#0D1B2A] font-bold'
                     : 'text-slate-400 hover:text-slate-600'
                 }`}
-                title="Tampilan Kartu Folder (Grid View)"
+                title="Grid Kartu"
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
+
+        {/* Baris 2: Tab Filter Kategori Ringkas */}
+        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 overflow-x-auto text-[11px]">
+          {(['ALL', 'prodi', 'matkul', 'kelas', 'laporan'] as const).map((cat) => {
+            const labels = {
+              ALL: 'Semua',
+              prodi: 'Prodi',
+              matkul: 'Mata Kuliah',
+              kelas: 'Kelas',
+              laporan: 'Naskah Laporan'
+            };
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(cat)}
+                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
+                  isActive
+                    ? 'bg-slate-900 text-white font-semibold shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {labels[cat]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 3. KONTEN UTAMA: GRID ATAU LIST VIEW */}
+      {/* 2. KONTEN UTAMA: GRID ATAU LIST VIEW */}
       {isLoading ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-16 shadow-xs flex items-center justify-center">
           <LoadingSpinner variant="section" message="Menyelaraskan direktori file manager..." />
@@ -779,25 +572,22 @@ export default function AcademicFileManager({
             title={searchTerm ? 'Tidak Ada Berkas yang Cocok' : 'Direktori Masih Kosong'}
             description={
               searchTerm
-                ? `Tidak ditemukan berkas atau folder dengan kata kunci "${searchTerm}".`
-                : 'Folder ini belum memiliki subfolder atau naskah laporan praktikum.'
+                ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}".`
+                : 'Belum ada berkas atau subfolder pada lokasi ini.'
             }
             actionLabel={isAdmin ? '+ Tambah Folder Baru' : undefined}
             onAction={isAdmin ? () => setIsNewFolderModalOpen(true) : undefined}
           />
         </div>
       ) : viewMode === 'grid' ? (
-        /* ========================================================================= */
-        /* GRID VIEW (Screenshot 1 & 2: Kartu Folder Bernomor & Berwarna, File Cards) */
-        /* ========================================================================= */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        /* ================= GRID VIEW MINIMALIS ================= */
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
           {displayedItems.map((item, idx) => {
             const isFolder = item.type !== 'laporan';
             const fileCount = countFilesInNode(item);
             const colorKey = getItemColor(item, idx);
             const colorDef = FOLDER_COLORS[colorKey];
             const isLocked = lockedFolders[item.id] || false;
-            const statusVal = folderStatuses[item.id] || (item.status === 'COMPLETED' ? 'Completed' : 'Inprogress');
 
             return (
               <div
@@ -811,50 +601,71 @@ export default function AcademicFileManager({
                     handleOpenFolder(item);
                   }
                 }}
-                className={`bg-white border border-slate-200/90 hover:border-slate-300 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all relative flex flex-col items-center justify-between text-center cursor-pointer group select-none min-h-[175px] ${
-                  item.type === 'laporan' ? 'hover:bg-slate-50/60' : ''
+                className={`bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all relative flex flex-col items-center justify-between text-center cursor-pointer group select-none min-h-[160px] ${
+                  item.type === 'laporan' ? 'hover:bg-slate-50/50' : ''
                 }`}
               >
-                {/* Header Kartu: Lock icon & 3-dots Menu Button */}
+                {/* Header Kartu: Status Lock & Tombol Menu 3 Titik Minimalis */}
                 <div className="w-full flex items-center justify-between mb-1" onClick={(e) => e.stopPropagation()}>
                   <div>
                     {isLocked ? (
-                      <Lock className="w-3.5 h-3.5 text-slate-400" title="Folder Terkunci" />
+                      <Lock className="w-3.5 h-3.5 text-slate-400" title="Terkunci" />
                     ) : (
                       <span className="w-3.5 h-3.5" />
                     )}
                   </div>
 
-                  {/* Tombol 3 Titik (⋮) untuk memunculkan Context Menu */}
+                  {/* Tombol 3 Titik (⋮) */}
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Opsi Folder"
+                      className="p-1 rounded-md text-slate-300 group-hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Opsi Berkas"
                     >
-                      <MoreVertical className="w-4 h-4" />
+                      <MoreVertical className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* POPOVER CONTEXT MENU (Screenshot 2: Download, Rename, Share, Color Picker, Delete) */}
+                    {/* POPOVER DETAIL MINIMALIS (Sleek White Card, Tanpa Kotak Hitam Besar) */}
                     {activeMenuId === item.id && (
                       <div
                         ref={menuRef}
-                        className="absolute right-0 top-7 z-50 w-64 bg-[#0D1B2A] text-white rounded-xl shadow-2xl border border-slate-700/80 p-3 text-left animate-in fade-in zoom-in-95 duration-150 select-none"
+                        className="absolute right-0 top-6.5 z-50 w-44 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-200/90 py-1.5 px-1 text-left animate-in fade-in zoom-in-95 duration-150 select-none"
                       >
-                        {/* Baris Tombol Aksi Cepat */}
-                        <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
-                          <button
-                            type="button"
-                            onClick={() => handleDownload(item)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                            title="Unduh Berkas / Arsip"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
+                        {/* 1. Buka / Pratinjau */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenFolder(item)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        >
+                          {isFolder ? <FolderOpen className="w-3.5 h-3.5 text-slate-500" /> : <Eye className="w-3.5 h-3.5 text-slate-500" />}
+                          <span>{isFolder ? 'Buka Folder' : 'Lihat Analisis'}</span>
+                        </button>
 
-                          {/* Tombol Edit / Rename: HANYA UNTUK ADMIN */}
-                          {isAdmin && (
+                        {/* 2. Unduh Berkas / Arsip */}
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(item)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{isFolder ? 'Unduh Arsip' : 'Unduh Dokumen'}</span>
+                        </button>
+
+                        {/* 3. Salin Tautan */}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyLink(item)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Salin Tautan</span>
+                        </button>
+
+                        {/* FITUR KHUSUS ADMIN (Ubah Nama, Palet Warna, Hapus) */}
+                        {isAdmin && (
+                          <>
+                            <div className="my-1 border-t border-slate-100" />
                             <button
                               type="button"
                               onClick={() => {
@@ -862,110 +673,58 @@ export default function AcademicFileManager({
                                 setEditingItemName(item.name);
                                 setActiveMenuId(null);
                               }}
-                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                              title="Ubah Nama Folder"
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Ubah Nama</span>
                             </button>
-                          )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleCopyLink(item)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                            title="Salin Tautan / Lokasi"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
+                            {isFolder && (
+                              <div className="px-2.5 py-1.5 border-t border-slate-100 mt-1">
+                                <span className="text-[10px] font-mono text-slate-400 block mb-1">Warna Folder</span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {Object.values(FOLDER_COLORS).slice(0, 6).map(c => (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      onClick={() => handleChangeColor(item.id, c.id)}
+                                      className="w-4 h-4 rounded-full transition-transform hover:scale-125 relative"
+                                      style={{ backgroundColor: c.hex }}
+                                      title={c.label}
+                                    >
+                                      {colorKey === c.id && <Check className="w-2.5 h-2.5 text-white stroke-[3] mx-auto" />}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                          {/* Tombol Kunci Folder: HANYA UNTUK ADMIN */}
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => handleToggleLock(item.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                              title={isLocked ? "Buka Kunci Folder" : "Kunci Folder"}
-                            >
-                              {isLocked ? <Unlock className="w-4 h-4 text-amber-400" /> : <Lock className="w-4 h-4" />}
-                            </button>
-                          )}
-
-                          {/* Tombol Hapus: HANYA UNTUK ADMIN */}
-                          {isAdmin && (
+                            <div className="my-1 border-t border-slate-100" />
                             <button
                               type="button"
                               onClick={() => handleDeleteItem(item)}
-                              className="p-1.5 rounded-lg hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors"
-                              title="Hapus Folder"
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Hapus</span>
                             </button>
-                          )}
-                        </div>
-
-                        {/* Palet Warna Folder (HANYA UNTUK ADMIN - Screenshot 2) */}
-                        {isAdmin && isFolder && (
-                          <div className="space-y-1.5 mb-2.5">
-                            <span className="text-[10px] uppercase font-mono font-bold text-slate-400 tracking-wider">
-                              Warna Folder
-                            </span>
-                            <div className="grid grid-cols-4 gap-1.5">
-                              {Object.values(FOLDER_COLORS).map(c => (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  onClick={() => handleChangeColor(item.id, c.id)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 relative"
-                                  style={{ backgroundColor: c.hex }}
-                                  title={c.label}
-                                >
-                                  {colorKey === c.id && <Check className="w-3 h-3 text-white stroke-[3]" />}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Pengatur Status Folder (ADMIN) atau Tinjauan Status (ASLAB) */}
-                        <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
-                          <span className="text-[10.5px] text-slate-400">Status:</span>
-                          {isAdmin ? (
-                            <select
-                              value={statusVal}
-                              onChange={(e) => handleChangeStatus(item.id, e.target.value as any)}
-                              className="bg-white/10 text-white text-[11px] rounded px-2 py-0.5 border border-white/20 focus:outline-none cursor-pointer"
-                            >
-                              <option value="Inprogress" className="bg-[#0D1B2A] text-amber-400">Inprogress</option>
-                              <option value="Completed" className="bg-[#0D1B2A] text-emerald-400">Completed</option>
-                            </select>
-                          ) : (
-                            <span className={`text-[10.5px] font-bold ${statusVal === 'Completed' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                              {statusVal}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Banner Read-Only untuk Aslab */}
-                        {isViewOnly && (
-                          <div className="mt-2 pt-2 border-t border-white/10 text-[9.5px] text-slate-400 text-center font-mono">
-                            Hak Akses Aslab: Tinjauan Berkas
-                          </div>
+                          </>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Tengah Kartu: Ikon Folder Grafis Bernomor atau Badge Berkas */}
+                {/* Bagian Tengah: Ikon Folder Bernomor atau Badge Dokumen */}
                 <div className="my-auto py-1">
                   {isFolder ? (
                     <NumberedFolderGraphic count={fileCount} colorHex={colorDef.hex} />
                   ) : (
-                    <FileTypeBadge name={item.name} score={item.skor_orisinalitas} />
+                    <MinimalistFileGraphic score={item.skor_orisinalitas} />
                   )}
                 </div>
 
-                {/* Bawah Kartu: Nama Item & Metadata */}
+                {/* Bagian Bawah: Nama Entitas & Metadata Minimalis */}
                 <div className="w-full mt-2" onClick={(e) => editingItemId === item.id && e.stopPropagation()}>
                   {editingItemId === item.id ? (
                     <div className="flex items-center gap-1 mt-1">
@@ -983,15 +742,15 @@ export default function AcademicFileManager({
                       <button
                         type="button"
                         onClick={() => handleSaveRename(item)}
-                        className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-700"
-                        title="Simpan Nama"
+                        className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                        title="Simpan"
                       >
                         <Check className="w-3 h-3" />
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditingItemId(null)}
-                        className="p-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300"
+                        className="p-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer"
                         title="Batal"
                       >
                         <X className="w-3 h-3" />
@@ -1000,15 +759,15 @@ export default function AcademicFileManager({
                   ) : (
                     <>
                       <h3 
-                        className="text-xs font-bold text-[#0D1B2A] truncate w-full group-hover:text-emerald-700 transition-colors" 
+                        className="text-xs font-semibold text-slate-900 truncate w-full group-hover:text-emerald-700 transition-colors" 
                         title={item.name}
                       >
                         {item.name}
                       </h3>
-                      <p className="text-[10px] font-mono text-slate-500 mt-0.5 truncate">
+                      <p className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">
                         {isFolder 
-                          ? `${fileCount} Berkas Terdaftar` 
-                          : (item.nim ? `NIM: ${item.nim}` : 'Laporan Mahasiswa')
+                          ? `${fileCount} berkas` 
+                          : (item.nim ? `NIM: ${item.nim}` : 'Naskah Mahasiswa')
                         }
                       </p>
                     </>
@@ -1018,7 +777,7 @@ export default function AcademicFileManager({
             );
           })}
 
-          {/* Kartu Tambah Folder Baru (HANYA TAMPIL UNTUK ADMIN - Screenshot 1) */}
+          {/* Kartu Tambah Folder Baru (HANYA UNTUK ADMIN) */}
           {isAdmin && (
             <div
               role="button"
@@ -1036,35 +795,33 @@ export default function AcademicFileManager({
                   setIsNewFolderModalOpen(true);
                 }
               }}
-              className="border-2 border-dashed border-slate-300 hover:border-emerald-600 bg-slate-50/50 hover:bg-emerald-50/30 rounded-2xl p-4 transition-all flex flex-col items-center justify-center text-center cursor-pointer group min-h-[175px]"
+              className="border-2 border-dashed border-slate-300 hover:border-emerald-600 bg-slate-50/50 hover:bg-emerald-50/30 rounded-xl p-3.5 transition-all flex flex-col items-center justify-center text-center cursor-pointer group min-h-[160px]"
               title="Tambah Folder Baru"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-200 group-hover:bg-emerald-600 group-hover:text-white text-slate-500 flex items-center justify-center transition-colors mb-2 shadow-2xs">
-                <Plus className="w-6 h-6 stroke-[2.5]" />
+              <div className="w-10 h-10 rounded-full bg-slate-200 group-hover:bg-emerald-600 group-hover:text-white text-slate-500 flex items-center justify-center transition-colors mb-2 shadow-2xs">
+                <Plus className="w-5 h-5 stroke-[2.5]" />
               </div>
               <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-800">
-                Tambah Folder Baru
+                Tambah Folder
               </span>
-              <span className="text-[10px] text-slate-500 mt-0.5">
-                Struktur Akademik
+              <span className="text-[10px] text-slate-400 mt-0.5">
+                Akademik
               </span>
             </div>
           )}
         </div>
       ) : (
-        /* ========================================================================= */
-        /* LIST VIEW (Screenshot 3: Tabel Type, Name, Status, Modified, Action)      */
-        /* ========================================================================= */
-        <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+        /* ================= LIST VIEW TABEL MINIMALIS ================= */
+        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/70 text-slate-600 font-semibold font-mono text-[11px]">
-                  <th className="py-3 px-4 w-14">Type</th>
-                  <th className="py-3 px-4">Name</th>
-                  <th className="py-3 px-4 w-36">Status</th>
-                  <th className="py-3 px-4 w-36">Modified</th>
-                  <th className="py-3 px-4 w-44 text-right">Action</th>
+                  <th className="py-2.5 px-4 w-12">Tipe</th>
+                  <th className="py-2.5 px-4">Nama</th>
+                  <th className="py-2.5 px-4 w-32">Status</th>
+                  <th className="py-2.5 px-4 w-32">Dimodifikasi</th>
+                  <th className="py-2.5 px-4 w-32 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1073,8 +830,6 @@ export default function AcademicFileManager({
                   const fileCount = countFilesInNode(item);
                   const colorKey = getItemColor(item, idx);
                   const colorDef = FOLDER_COLORS[colorKey];
-                  const isLocked = lockedFolders[item.id] || false;
-                  const statusVal = folderStatuses[item.id] || (item.status === 'COMPLETED' ? 'Completed' : 'Inprogress');
 
                   return (
                     <tr
@@ -1082,24 +837,22 @@ export default function AcademicFileManager({
                       className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
                       onClick={() => handleOpenFolder(item)}
                     >
-                      {/* 1. Kolom TYPE */}
-                      <td className="py-3 px-4">
+                      <td className="py-2.5 px-4">
                         {isFolder ? (
                           <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-2xs"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white shadow-2xs"
                             style={{ backgroundColor: colorDef.hex }}
                           >
-                            <Folder className="w-4 h-4 fill-white" />
+                            <Folder className="w-3.5 h-3.5 fill-white" />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center font-bold font-mono text-[9px]">
+                          <div className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center font-bold font-mono text-[8.5px]">
                             PDF
                           </div>
                         )}
                       </td>
 
-                      {/* 2. Kolom NAME */}
-                      <td className="py-3 px-4" onClick={(e) => editingItemId === item.id && e.stopPropagation()}>
+                      <td className="py-2.5 px-4" onClick={(e) => editingItemId === item.id && e.stopPropagation()}>
                         {editingItemId === item.id ? (
                           <div className="flex items-center gap-1.5 max-w-sm">
                             <input
@@ -1118,111 +871,87 @@ export default function AcademicFileManager({
                               onClick={() => handleSaveRename(item)}
                               className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
                             >
-                              <Check className="w-3.5 h-3.5" />
+                              <Check className="w-3 h-3" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setEditingItemId(null)}
                               className="p-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer"
                             >
-                              <X className="w-3.5 h-3.5" />
+                              <X className="w-3 h-3" />
                             </button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                            <span className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
                               {item.name}
                             </span>
                             {isFolder && (
                               <span className="text-slate-400 font-mono text-[11px]">
-                                ({fileCount} files)
+                                ({fileCount} berkas)
                               </span>
                             )}
                             {item.skor_orisinalitas !== undefined && (
                               <span 
-                                className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                                className={`text-[9.5px] font-mono font-bold px-1.5 py-0.2 rounded-full border ${
                                   item.skor_orisinalitas >= 75 
-                                    ? 'bg-emerald-100 text-emerald-800' 
-                                    : 'bg-rose-100 text-rose-800'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                    : 'bg-rose-50 text-rose-700 border-rose-200'
                                 }`}
                               >
-                                {item.skor_orisinalitas.toFixed(1)}% Orisinal
+                                {item.skor_orisinalitas.toFixed(0)}%
                               </span>
                             )}
                           </div>
                         )}
                       </td>
 
-                      {/* 3. Kolom STATUS */}
-                      <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                        {isAdmin ? (
-                          <select
-                            value={statusVal}
-                            onChange={(e) => handleChangeStatus(item.id, e.target.value as any)}
-                            className={`text-xs font-semibold rounded-md px-2 py-1 border transition-colors cursor-pointer ${
-                              statusVal === 'Completed'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
-                            }`}
-                          >
-                            <option value="Inprogress">Inprogress</option>
-                            <option value="Completed">Completed</option>
-                          </select>
+                      <td className="py-2.5 px-4 text-slate-500 font-mono text-[11px]">
+                        {item.status === 'COMPLETED' ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px]">
+                            Selesai
+                          </span>
                         ) : (
-                          <span
-                            className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
-                              statusVal === 'Completed'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
-                            }`}
-                          >
-                            {statusVal}
+                          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px]">
+                            Diproses
                           </span>
                         )}
                       </td>
 
-                      {/* 4. Kolom MODIFIED */}
-                      <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                      <td className="py-2.5 px-4 text-slate-400 font-mono text-[11px]">
                         {item.updated_at 
                           ? new Date(item.updated_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
                           : '09/Okt/2026'
                         }
                       </td>
 
-                      {/* 5. Kolom ACTION (Screenshot 3) */}
-                      <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-2.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1 text-slate-400">
-                          {/* Tombol Lihat / Detail Naskah */}
                           <button
                             type="button"
                             onClick={() => handleOpenFolder(item)}
-                            className="p-1.5 rounded hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
-                            title="Buka / Pratinjau"
+                            className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                            title="Buka"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
-
-                          {/* Tombol Unduh */}
                           <button
                             type="button"
                             onClick={() => handleDownload(item)}
-                            className="p-1.5 rounded hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
-                            title="Unduh Berkas"
+                            className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                            title="Unduh"
                           >
-                            <Download className="w-4 h-4" />
+                            <Download className="w-3.5 h-3.5" />
                           </button>
-
-                          {/* Tombol Bagikan */}
                           <button
                             type="button"
                             onClick={() => handleCopyLink(item)}
-                            className="p-1.5 rounded hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                             title="Salin Tautan"
                           >
-                            <Share2 className="w-4 h-4" />
+                            <Share2 className="w-3.5 h-3.5" />
                           </button>
 
-                          {/* AKSI KHUSUS ADMIN (Rename, Color Picker, Delete) */}
                           {isAdmin && (
                             <>
                               <button
@@ -1231,28 +960,18 @@ export default function AcademicFileManager({
                                   setEditingItemId(item.id);
                                   setEditingItemName(item.name);
                                 }}
-                                className="p-1.5 rounded hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
+                                className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                                 title="Ubah Nama"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="w-3.5 h-3.5" />
                               </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                                className="p-1.5 rounded hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
-                                title="Ganti Warna Folder"
-                              >
-                                <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: colorDef.hex }} />
-                              </button>
-
                               <button
                                 type="button"
                                 onClick={() => handleDeleteItem(item)}
-                                className="p-1.5 rounded hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                                className="p-1 rounded hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                                 title="Hapus"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </>
                           )}
@@ -1267,57 +986,52 @@ export default function AcademicFileManager({
         </div>
       )}
 
-      {/* 4. MODAL TAMBAH FOLDER BARU (HANYA UNTUK ADMIN) */}
+      {/* 3. MODAL TAMBAH FOLDER BARU (ADMIN ONLY) */}
       {isAdmin && isNewFolderModalOpen && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                  <FolderPlus className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-[#0D1B2A]">Tambah Folder Akademik Baru</h3>
-                  <p className="text-[11px] text-slate-500">Buat folder program studi, mata kuliah, atau kelas.</p>
-                </div>
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <FolderPlus className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-xs text-[#0D1B2A]">Tambah Folder Baru</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsNewFolderModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 p-0.5"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewFolder} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 block">Tingkat Struktur Folder</label>
+            <form onSubmit={handleCreateNewFolder} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-600 block">Tingkat Struktur</label>
                 <select
                   value={newFolderType}
                   onChange={(e) => setNewFolderType(e.target.value as any)}
-                  className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:outline-none focus:border-emerald-600 cursor-pointer"
+                  className="w-full h-8 px-2.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:outline-none cursor-pointer"
                 >
-                  <option value="prodi">Program Studi (Root Folder)</option>
+                  <option value="prodi">Program Studi (Root)</option>
                   <option value="matkul">Mata Kuliah</option>
                   <option value="kelas">Kelas Praktikum</option>
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 block">Nama Folder</label>
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-600 block">Nama Folder</label>
                 <Input
                   type="text"
-                  placeholder="Contoh: Teknik Elektro, Desain Web, dsb..."
+                  placeholder="Nama folder..."
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   autoFocus
                   required
-                  className="h-9 text-xs"
+                  className="h-8 text-xs"
                 />
               </div>
 
@@ -1327,17 +1041,17 @@ export default function AcademicFileManager({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsNewFolderModalOpen(false)}
-                  className="text-xs"
+                  className="text-xs h-8"
                 >
                   Batal
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8"
                   disabled={createProdiMutation.isPending || createMatkulMutation.isPending || createKelasMutation.isPending}
                 >
-                  Simpan Folder
+                  Simpan
                 </Button>
               </div>
             </form>

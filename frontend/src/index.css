@@ -99,7 +99,7 @@
   
   html {
     @apply font-sans;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     scroll-behavior: smooth;
   }
