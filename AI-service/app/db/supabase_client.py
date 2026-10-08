@@ -14,15 +14,25 @@ class SupabaseVectorClient:
     def __init__(self):
         self._conn = None
 
+    def _clean_db_url(self, url: str) -> str:
+        import re
+        # Hapus pgbouncer=true yang sering disertakan oleh Prisma Supabase
+        cleaned = re.sub(r'[?&]pgbouncer=[^&]*', '', url)
+        # Jika URL menyisakan tanda tanya menggantung, hapus
+        if cleaned.endswith('?'):
+            cleaned = cleaned[:-1]
+        return cleaned
+
     def get_connection(self):
         """
         Mengembalikan koneksi aktif dengan pgvector terdaftar.
         Melakukan auto-reconnect jika koneksi terputus.
         """
+        db_url = self._clean_db_url(settings.DATABASE_URL)
         try:
             if self._conn is None or self._conn.closed:
                 logger.info("Membuka koneksi baru ke Supabase PostgreSQL...")
-                self._conn = psycopg2.connect(settings.DATABASE_URL)
+                self._conn = psycopg2.connect(db_url)
                 register_vector(self._conn)
                 logger.info("Koneksi pgvector ke Supabase berhasil diinisialisasi.")
             else:
@@ -31,7 +41,7 @@ class SupabaseVectorClient:
                     cur.execute("SELECT 1")
         except Exception as e:
             logger.warning(f"Koneksi terputus ({e}), membuka koneksi ulang...")
-            self._conn = psycopg2.connect(settings.DATABASE_URL)
+            self._conn = psycopg2.connect(db_url)
             register_vector(self._conn)
             
         return self._conn
