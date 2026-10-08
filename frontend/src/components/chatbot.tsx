@@ -306,11 +306,11 @@ export default function Chatbot({
 
   return (
     <>
-      {/* 1. ROOM CHAT PANEL (Berada persis di atas maskot, otomatis bergeser jika drawer samping terbuka) */}
+      {/* 1. ROOM CHAT PANEL (Responsif di mobile dengan margin simetris di atas bottom bar) */}
       {isOpen && (
         <div 
-          className={`fixed bottom-[165px] z-[70] w-[calc(100vw-32px)] sm:w-[410px] h-[min(510px,calc(100vh-185px))] max-h-[calc(100vh-185px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
-            isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
+          className={`fixed bottom-[74px] lg:bottom-[165px] z-[70] left-3 right-3 sm:left-auto sm:right-5 sm:w-[410px] h-[min(520px,calc(100vh-160px))] max-h-[calc(100vh-160px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 font-sans select-none transition-all duration-300 ${
+            isSideDrawerOpen ? 'md:right-[464px] max-md:hidden' : ''
           }`}
           role="dialog"
           aria-label="Ruang Percakapan Veritas Copilot"
@@ -661,8 +661,8 @@ export default function Chatbot({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-[165px] z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in slide-in-from-bottom-1 ${
-            isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
+          className={`fixed bottom-[195px] lg:bottom-[165px] z-[70] bg-[#0D1B2A]/95 hover:bg-[#0D1B2A] text-slate-100 text-[11.5px] font-medium tracking-wide px-3.5 py-1.5 rounded-full shadow-[0_8px_24px_rgba(13,27,42,0.25)] border border-white/10 backdrop-blur-md flex items-center gap-2 cursor-pointer transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.98] select-none animate-in fade-in slide-in-from-bottom-1 ${
+            isSideDrawerOpen ? 'right-3 sm:right-5 md:right-[464px] max-md:hidden' : 'right-3 sm:right-5'
           }`}
           title="Buka ruang percakapan dengan Veritas AI"
         >
@@ -676,15 +676,15 @@ export default function Chatbot({
         </button>
       )}
 
-      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (UKURAN 135px, DIPOSISIKAN RAPI TANPA TERPOTONG) */}
+      {/* 3. MASKOT MOCHI INTERAKTIF 60FPS (DIPOSISIKAN TEPAT DI ATAS BILAH NAVIGASI MOBILE) */}
       <div 
-        className={`fixed bottom-6 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
-          isSideDrawerOpen ? 'right-5 md:right-[464px] max-md:hidden' : 'right-5'
+        className={`fixed bottom-[74px] lg:bottom-6 z-[70] cursor-pointer transition-all duration-300 active:scale-95 filter drop-shadow-xl select-none ${
+          isSideDrawerOpen ? 'right-2 sm:right-5 md:right-[464px] max-md:hidden' : 'right-2 sm:right-5'
         }`}
         title={isOpen ? "Klik maskot untuk menutup obrolan" : "Klik maskot untuk membuka obrolan"}
       >
         <CoucouMochi
-          size={135}
+          size={120}
           label="Maskot Mochi Veritas AI STITEK Bontang"
           onClick={() => setIsOpen(prev => !prev)}
           status={mochiStatus}
@@ -692,7 +692,7 @@ export default function Chatbot({
 
         {/* Titik Indikator Status Online AI */}
         <span 
-          className="absolute bottom-3 right-3 w-3.5 h-3.5 rounded-full bg-[#415A77]/100 border-2 border-white shadow-xs pointer-events-none" 
+          className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 rounded-full bg-[#415A77]/100 border-2 border-white shadow-xs pointer-events-none" 
           title="Veritas AI Online"
         />
       </div>

@@ -81,6 +81,16 @@ export default function PdfViewer({
     }
   }, [targetPage]);
 
+  // Auto-fit skala tampilan awal di layar mobile (< 640px)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      const padding = 28;
+      const availableWidth = window.innerWidth - padding;
+      const fitRatio = Math.max(0.5, Math.min(1.0, Math.round((availableWidth / baseViewportWidth) * 100) / 100));
+      setZoomScale(fitRatio);
+    }
+  }, []);
+
   // Sinkronisasi otomatis ke halaman sorotan aktif saat dipilih
   useEffect(() => {
     if (activeHighlightId) {
@@ -222,15 +232,15 @@ export default function PdfViewer({
       )}
 
       {/* 2. Layer Filter & Top Controls Toolbar (Minimalist Light Theme) */}
-      <div className="bg-white border-b border-slate-200/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-10 shrink-0">
+      <div className="bg-white border-b border-slate-200/80 px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 z-10 shrink-0 select-none">
         {/* Sisi Kiri: Filter Sorotan Pill Group */}
-        <div className="flex items-center gap-1.5 text-[11px] font-medium overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 text-[11px] font-medium overflow-x-auto no-scrollbar scroll-smooth w-full sm:w-auto py-0.5">
           <span className="text-slate-400 mr-1 text-xs font-semibold hidden sm:inline">Sorotan:</span>
 
           <button
             type="button"
             onClick={() => setFilterType('ALL')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               filterType === 'ALL'
                 ? 'bg-[#0D1B2A] text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -249,7 +259,7 @@ export default function PdfViewer({
           <button
             type="button"
             onClick={() => setFilterType('PLAGIARISM')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               filterType === 'PLAGIARISM'
                 ? 'bg-rose-600 text-white shadow-2xs'
                 : 'text-rose-700 hover:bg-rose-50'
@@ -269,7 +279,7 @@ export default function PdfViewer({
           <button
             type="button"
             onClick={() => setFilterType('ORIGINAL')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               filterType === 'ORIGINAL'
                 ? 'bg-emerald-700 text-white shadow-2xs'
                 : 'text-emerald-700 hover:bg-emerald-50'
@@ -289,7 +299,7 @@ export default function PdfViewer({
           <button
             type="button"
             onClick={() => setFilterType('TEMPLATE')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               filterType === 'TEMPLATE'
                 ? 'bg-sky-600 text-white shadow-2xs'
                 : 'text-sky-700 hover:bg-sky-50'
@@ -307,8 +317,8 @@ export default function PdfViewer({
           </button>
         </div>
 
-        {/* Sisi Kanan: Kontrol Zoom & Halaman */}
-        <div className="flex items-center gap-2">
+        {/* Sisi Kanan: Kontrol Zoom & Halaman (Reflow Rapi di Mobile) */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
           {/* Zoom Controls */}
           <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5">
             <button
@@ -316,7 +326,7 @@ export default function PdfViewer({
               onClick={() => setZoomScale((s) => Math.max(0.6, Math.round((s - 0.15) * 100) / 100))}
               disabled={zoomScale <= 0.6}
               title="Perkecil Tampilan"
-              className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-slate-500 hover:text-slate-800 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -324,7 +334,7 @@ export default function PdfViewer({
               type="button"
               onClick={() => setZoomScale(1.0)}
               title="Atur Ulang Skala (100%)"
-              className="px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+              className="px-2 py-1 text-[10px] font-mono font-bold text-slate-600 hover:text-slate-900 cursor-pointer min-h-[32px] flex items-center justify-center"
             >
               {Math.round(zoomScale * 100)}%
             </button>
@@ -333,7 +343,7 @@ export default function PdfViewer({
               onClick={() => setZoomScale((s) => Math.min(2.0, Math.round((s + 0.15) * 100) / 100))}
               disabled={zoomScale >= 2.0}
               title="Perbesar Tampilan"
-              className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-slate-500 hover:text-slate-800 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
@@ -346,7 +356,7 @@ export default function PdfViewer({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage <= 1}
               title="Halaman Sebelumnya (←)"
-              className="p-0.5 rounded text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors cursor-pointer"
+              className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
@@ -357,7 +367,7 @@ export default function PdfViewer({
                 value={inputPage}
                 onChange={(e) => setInputPage(e.target.value)}
                 onBlur={() => setInputPage(String(currentPage))}
-                className="w-8 text-center bg-white border border-slate-200 rounded px-1 py-0.5 text-xs text-[#0D1B2A] font-mono font-bold focus:outline-none focus:border-[#D4AF37]"
+                className="w-8 text-center bg-white border border-slate-200 rounded px-1 py-1 text-xs text-[#0D1B2A] font-mono font-bold focus:outline-none focus:border-[#D4AF37]"
               />
               <span className="text-slate-400 text-[11px] font-mono">/ {resolvedTotalPages}</span>
             </form>
@@ -367,7 +377,7 @@ export default function PdfViewer({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= resolvedTotalPages}
               title="Halaman Berikutnya (→)"
-              className="p-0.5 rounded text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors cursor-pointer"
+              className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
