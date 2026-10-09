@@ -511,155 +511,144 @@ export default function Welcome() {
         </section>
 
         {/* ========================================================================= */}
-        {/* 5. LEDGER TABLE DIRECTORY (Clean Minimalist Architecture Archive)        */}
+        {/* 5. LEDGER SPECIFICATION DIRECTORY (Minimalist Editorial Typography)      */}
         {/* ========================================================================= */}
         <section id="archive-section" className="py-20 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
           
           {/* Header Direktori */}
-          <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200/70 pb-5">
+          <div className="mb-10 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#0D1B2A]/10">
             <div>
-              <span className="text-xs font-semibold text-[#415A77] tracking-wider uppercase block mb-1">
-                Arsitektur Komputasi
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-brutalism text-[#0D1B2A] tracking-tight">
-                Spesifikasi Modul & Metodologi Sistem
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#415A77]">
+                  Arsitektur Komputasi
+                </span>
+                <span className="text-stone-300">•</span>
+                <span className="text-[11px] font-mono tracking-wider text-[#D4AF37]">
+                  Pipeline Multi-Tahap
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-brutalism text-[#0D1B2A] tracking-tight">
+                Spesifikasi Modul &amp; <span className="font-editorial-italic font-normal text-[#D4AF37]">Metodologi Sistem</span>
               </h2>
+              <p className="text-xs sm:text-sm font-readable text-[#415A77] mt-2 max-w-xl">
+                Alur komputasi bertingkat untuk menjamin orisinalitas naskah laporan praktikum secara deterministik.
+              </p>
             </div>
-            <p className="text-xs text-[#415A77]">
-              5 Modul Terintegrasi dalam Pipeline
-            </p>
+            <div className="text-left sm:text-right shrink-0">
+              <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-[#415A77]/70 block">
+                Status Integrasi
+              </span>
+              <span className="font-mono text-xs sm:text-sm font-semibold text-[#0D1B2A]">
+                5 Modul Terhubung
+              </span>
+            </div>
           </div>
 
-          {/* Minimalist Ledger Table */}
-          <div className="bg-white border border-stone-200/90 rounded-2xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-stone-200 bg-stone-50/70 font-mono text-[11px] text-[#415A77] uppercase tracking-wider">
-                    <th className="py-3.5 px-6 font-semibold w-16">No</th>
-                    <th className="py-3.5 px-6 font-semibold">Modul & Kapabilitas</th>
-                    <th className="py-3.5 px-6 font-semibold">Klasifikasi</th>
-                    <th className="py-3.5 px-6 font-semibold">Metodologi Ilmiah</th>
-                    <th className="py-3.5 px-6 font-semibold text-right">Keluaran Validasi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 font-readable text-[#0D1B2A]">
-                  
-                  {/* Baris 1 */}
-                  <tr className="ledger-row hover:bg-stone-50/80 transition-colors">
-                    <td className="py-4 px-6 font-mono font-semibold text-stone-400">01</td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-xs sm:text-sm text-[#0D1B2A]">Ekstraksi Geometri PDF Spasial</div>
-                      <div className="text-[11px] text-[#415A77] mt-0.5">Pemetaan koordinat fisik teks dan visual per halaman</div>
-                    </td>
-                    <td className="py-4 px-6 text-[11px] text-[#415A77]">Analisis Spasial</td>
-                    <td className="py-4 px-6">
-                      <span className="font-mono text-[11px] text-[#0D1B2A] bg-stone-100/70 px-2 py-0.5 rounded border border-stone-200/60 inline-block">
-                        PyMuPDF Bounding Box ($BBox$)
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-xs font-medium text-stone-700">
-                        Matriks Koordinat Objek
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Baris 2 */}
-                  <tr className="ledger-row hover:bg-stone-50/80 transition-colors">
-                    <td className="py-4 px-6 font-mono font-semibold text-stone-400">02</td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-xs sm:text-sm text-[#0D1B2A]">Pencarian Hibrida RRF</div>
-                      <div className="text-[11px] text-[#415A77] mt-0.5">Penggabungan ranking kemiripan dense dan leksikal</div>
-                    </td>
-                    <td className="py-4 px-6 text-[11px] text-[#415A77]">Retrieval Engine</td>
-                    <td className="py-4 px-6">
-                      <span className="font-mono text-[11px] text-[#0D1B2A] bg-stone-100/70 px-2 py-0.5 rounded border border-stone-200/60 inline-block">
-                        Reciprocal Rank Fusion ($k = 60$)
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-xs font-medium text-stone-700">
-                        Peringkat Kemiripan Fusi
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Baris 3 */}
-                  <tr className="ledger-row hover:bg-stone-50/80 transition-colors">
-                    <td className="py-4 px-6 font-mono font-semibold text-stone-400">03</td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-xs sm:text-sm text-[#0D1B2A]">Filter Bias Modul 5 Lapis</div>
-                      <div className="text-[11px] text-[#415A77] mt-0.5">Pembersihan kalimat template modul dan soal praktikum</div>
-                    </td>
-                    <td className="py-4 px-6 text-[11px] text-[#415A77]">Pra-pemrosesan Data</td>
-                    <td className="py-4 px-6">
-                      <span className="font-mono text-[11px] text-[#0D1B2A] bg-stone-100/70 px-2 py-0.5 rounded border border-stone-200/60 inline-block">
-                        Few-Shot Prototypical Centroid
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-xs font-medium text-stone-700">
-                        Naskah Bersih Bebas Bias
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Baris 4 */}
-                  <tr className="ledger-row hover:bg-stone-50/80 transition-colors">
-                    <td className="py-4 px-6 font-mono font-semibold text-stone-400">04</td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-xs sm:text-sm text-[#0D1B2A]">Cross-Encoder Multimodal Reranking</div>
-                      <div className="text-[11px] text-[#415A77] mt-0.5">Skoring ulang pasangan teks dan gambar kandidat plagiarisme</div>
-                    </td>
-                    <td className="py-4 px-6 text-[11px] text-[#415A77]">Inferensi Multimodal</td>
-                    <td className="py-4 px-6">
-                      <span className="font-mono text-[11px] text-[#0D1B2A] bg-stone-100/70 px-2 py-0.5 rounded border border-stone-200/60 inline-block">
-                        MiniLM-L6 Cross Attention
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-xs font-medium text-stone-700">
-                        Skor Probabilitas Pasangan
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Baris 5 */}
-                  <tr className="ledger-row hover:bg-stone-50/80 transition-colors">
-                    <td className="py-4 px-6 font-mono font-semibold text-stone-400">05</td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-xs sm:text-sm text-[#0D1B2A]">Rekapitulasi & Verifikasi Penilaian</div>
-                      <div className="text-[11px] text-[#415A77] mt-0.5">Panel peninjauan asisten laboratorium dan dosen penguji</div>
-                    </td>
-                    <td className="py-4 px-6 text-[11px] text-[#415A77]">Panel Evaluasi</td>
-                    <td className="py-4 px-6">
-                      <span className="font-mono text-[11px] text-[#0D1B2A] bg-stone-100/70 px-2 py-0.5 rounded border border-stone-200/60 inline-block">
-                        PostgreSQL Matrix & PDF Export
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-xs font-medium text-stone-700">
-                        Berita Acara Digital Siap Cetak
-                      </span>
-                    </td>
-                  </tr>
-
-                </tbody>
-              </table>
-            </div>
-
-            {/* Table Footer Action & Note */}
-            <div className="border-t border-stone-200/80 bg-stone-50/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#415A77]">
-              <span>Semua modul berjalan terintegrasi dalam pipeline deteksi orisinalitas saat berkas laporan diunggah.</span>
-              <button
-                type="button"
-                onClick={handleActionClick}
-                className="font-semibold text-[#0D1B2A] hover:text-[#D4AF37] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-md px-3 py-1.5 self-start sm:self-auto border border-stone-200 bg-white hover:bg-stone-50 shadow-2xs cursor-pointer"
+          {/* Minimalist Editorial Module Ledger (Numbered 01 - 05) */}
+          <div className="border-t border-[#0D1B2A]/15 divide-y divide-stone-200/80">
+            {[
+              {
+                num: '01',
+                title: 'Ekstraksi Geometri PDF Spasial',
+                desc: 'Pemetaan koordinat fisik teks dan visual per halaman',
+                classification: 'Analisis Spasial',
+                methodology: 'PyMuPDF Bounding Box ($BBox$)',
+                output: 'Matriks Koordinat Objek',
+              },
+              {
+                num: '02',
+                title: 'Pencarian Hibrida RRF',
+                desc: 'Penggabungan ranking kemiripan dense dan leksikal',
+                classification: 'Retrieval Engine',
+                methodology: 'Reciprocal Rank Fusion ($k = 60$)',
+                output: 'Peringkat Kemiripan Fusi',
+              },
+              {
+                num: '03',
+                title: 'Filter Bias Modul 5 Lapis',
+                desc: 'Pembersihan kalimat template modul dan soal praktikum',
+                classification: 'Pra-pemrosesan Data',
+                methodology: 'Few-Shot Prototypical Centroid',
+                output: 'Naskah Bersih Bebas Bias',
+              },
+              {
+                num: '04',
+                title: 'Cross-Encoder Multimodal Reranking',
+                desc: 'Skoring ulang pasangan teks dan gambar kandidat plagiarisme',
+                classification: 'Inferensi Multimodal',
+                methodology: 'MiniLM-L6 Cross Attention',
+                output: 'Skor Probabilitas Pasangan',
+              },
+              {
+                num: '05',
+                title: 'Rekapitulasi & Verifikasi Penilaian',
+                desc: 'Panel peninjauan asisten laboratorium dan dosen penguji',
+                classification: 'Panel Evaluasi',
+                methodology: 'PostgreSQL Matrix & PDF Export',
+                output: 'Berita Acara Digital Siap Cetak',
+              },
+            ].map((item) => (
+              <div
+                key={item.num}
+                className="ledger-row group py-6 sm:py-8 transition-colors duration-200 hover:bg-stone-50/50"
               >
-                Buka Konsol Pengujian
-              </button>
-            </div>
+                <div className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-6 items-baseline">
+                  
+                  {/* Numeral: Sculptural Monospace */}
+                  <div className="col-span-2 sm:col-span-1">
+                    <span className="font-mono text-2xl sm:text-3xl lg:text-4xl font-light text-stone-300 group-hover:text-[#D4AF37] transition-colors duration-200 select-none">
+                      {item.num}
+                    </span>
+                  </div>
+
+                  {/* Modul & Kapabilitas */}
+                  <div className="col-span-10 sm:col-span-11 md:col-span-5">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-bold font-brutalism text-[#0D1B2A] tracking-tight group-hover:translate-x-1 transition-transform duration-200">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm font-readable text-[#415A77] mt-1 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  {/* Klasifikasi & Metodologi Ilmiah */}
+                  <div className="col-start-3 col-span-10 sm:col-start-2 sm:col-span-11 md:col-start-auto md:col-span-3 mt-1 md:mt-0">
+                    <div className="font-mono text-[10px] sm:text-[11px] tracking-widest uppercase text-[#415A77]/70">
+                      {item.classification}
+                    </div>
+                    <div className="font-mono text-xs sm:text-[13px] text-[#0D1B2A] font-medium mt-0.5">
+                      {item.methodology}
+                    </div>
+                  </div>
+
+                  {/* Keluaran Validasi */}
+                  <div className="col-start-3 col-span-10 sm:col-start-2 sm:col-span-11 md:col-start-auto md:col-span-3 md:text-right mt-1 md:mt-0">
+                    <div className="font-mono text-[10px] sm:text-[11px] tracking-widest uppercase text-[#415A77]/70">
+                      Keluaran Validasi
+                    </div>
+                    <div className="font-readable text-xs sm:text-sm font-semibold text-[#0D1B2A] mt-0.5">
+                      {item.output}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Section Footer: Quiet Academic Note & Primary Action */}
+          <div className="pt-8 border-t border-[#0D1B2A]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <p className="font-readable text-xs sm:text-sm text-[#415A77] max-w-xl">
+              Semua modul berjalan terintegrasi dalam pipeline deteksi orisinalitas saat berkas laporan diunggah.
+            </p>
+            <button
+              type="button"
+              onClick={handleActionClick}
+              className="inline-flex items-center gap-2 font-mono text-xs font-semibold text-[#0D1B2A] hover:text-[#D4AF37] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-md px-4 py-2.5 border border-[#0D1B2A]/15 bg-white hover:bg-stone-50 shadow-2xs cursor-pointer self-start sm:self-auto group"
+            >
+              <span>Buka Konsol Pengujian</span>
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#D4AF37] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
           </div>
 
         </section>
