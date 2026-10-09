@@ -2,29 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession, useLogout } from '../api/auth';
 import { 
-  Cpu, 
-  ArrowDown, 
   ArrowRight,
+  ArrowUpRight,
   LogIn, 
   LayoutDashboard, 
-  Upload, 
-  BarChart, 
   MapPin, 
   Bot, 
   Layers, 
-  Users,
+  Cpu, 
   ChevronDown,
-  LogOut
+  LogOut,
+  ShieldCheck,
+  Check,
+  FileText
 } from 'lucide-react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import TypewriterText from '../components/ui/typewriter-text';
-import ScrollReveal from '../components/ui/scroll-reveal';
 import CurvedTransition from '../components/ui/curved-transition';
-import { Button } from '../components/ui/button';
 import { Logo } from '../components/ui/logo';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -32,11 +25,11 @@ export default function Welcome() {
   const { data: session } = useSession();
   const logoutMutation = useLogout();
 
-  // State menu dropdown profil pengguna di header
+  // State menu dropdown profil pengguna di floating navbar
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Deteksi klik di luar menu dropdown profil untuk menutupnya secara otomatis
+  // Menutup dropdown saat klik di luar
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
@@ -51,24 +44,13 @@ export default function Welcome() {
     };
   }, [isProfileDropdownOpen]);
 
-  // Membaca state transisi Curve Swipe Back (Kembali)
+  // Membaca state transisi Curved Wipe Back (Kembali dari Login)
   const triggerSwipeOutBack = location.state?.triggerSwipeOutBack === true;
   const [renderSwipeOverlayBack, setRenderSwipeOverlayBack] = useState(triggerSwipeOutBack);
-
-  // State untuk Section 4: Radar Scanner & Split Nodes (Accordion Dropdown)
-  const [activeFeature, setActiveFeature] = useState<number | null>(0);
-
-  // Refs untuk animasi GSAP ScrollTrigger
-  const pipelineSectionRef = useRef<HTMLDivElement>(null);
-  const line1Ref = useRef<SVGLineElement>(null);
-  const line2Ref = useRef<SVGLineElement>(null);
-  const stepNumsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const stepTextsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const [isSwiping, setIsSwiping] = useState(false);
   const [targetPathToNavigate, setTargetPathToNavigate] = useState<string | null>(null);
 
-  // Scroll to top jika kembali dari halaman Login
   useEffect(() => {
     if (triggerSwipeOutBack) {
       window.scrollTo(0, 0);
@@ -100,568 +82,499 @@ export default function Welcome() {
     }
   };
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // 1. Animasi Lini Aliran Data SVG Fleksibel (Section 3)
-      if (pipelineSectionRef.current) {
-        // Baris Konektor 1 (Scrub diperhalus dengan inersia 1.2s)
-        if (line1Ref.current) {
-          gsap.fromTo(line1Ref.current,
-            { strokeDashoffset: 100 },
-            {
-              strokeDashoffset: 0,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: pipelineSectionRef.current,
-                start: 'top center+=20%',
-                end: 'center center+=10%',
-                scrub: 1.2
-              }
-            }
-          );
-        }
-
-        // Baris Konektor 2 (Scrub diperhalus dengan inersia 1.2s)
-        if (line2Ref.current) {
-          gsap.fromTo(line2Ref.current,
-            { strokeDashoffset: 100 },
-            {
-              strokeDashoffset: 0,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: pipelineSectionRef.current,
-                start: 'center center',
-                end: 'bottom center',
-                scrub: 1.2
-              }
-            }
-          );
-        }
-
-        // 2. Animasikan perubahan warna teks angka langkah
-        stepNumsRef.current.forEach((numEl) => {
-          if (!numEl) return;
-          gsap.fromTo(numEl, 
-            { color: 'rgba(13, 27, 42, 0.25)' },
-            {
-              color: '#D4AF37', // Metallic Brass aktif
-              scrollTrigger: {
-                trigger: numEl,
-                start: 'top center+=30%',
-                end: 'bottom center-=10%',
-                toggleActions: 'play reverse play reverse'
-              }
-            }
-          );
-        });
-
-        // 3. Animasikan pemudaran paragraf deskripsi langkah
-        stepTextsRef.current.forEach((textEl) => {
-          if (!textEl) return;
-          gsap.fromTo(textEl,
-            { opacity: 0.35, y: 15 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.4,
-              scrollTrigger: {
-                trigger: textEl,
-                start: 'top center+=35%',
-                end: 'bottom center-=10%',
-                toggleActions: 'play reverse play reverse'
-              }
-            }
-          );
-        });
-      }
-    });
-
-    return () => {
-      ctx.revert();
-    };
-  }, []);
-
-  // Data tahap pipeline deteksi orisinalitas
-  const pipelineSteps = [
-    {
-      title: 'Pemetaan Spasial Geometri PDF',
-      shortLabel: 'Geometri PDF',
-      desc: 'Koordinat teks pembanding disorot secara interaktif langsung pada lembar dokumen PDF asli lengkap dengan nomor halaman dan bounding box fisik.',
-      icon: MapPin
-    },
-    {
-      title: 'Filter Bias Template 5 Lapis',
-      shortLabel: 'Filter Bias',
-      desc: 'Sistem menyaring otomatis kalimat instruksi modul praktikum, frasa akademik generik, frekuensi lintas laporan, dan centroid Prototypical Network agar tidak salah tuduh.',
-      icon: Bot
-    },
-    {
-      title: 'Penelusuran Hibrida RRF (k = 60)',
-      shortLabel: 'RRF Hibrida',
-      desc: 'Mengombinasikan penelusuran semantik vektor dense dengan PostgreSQL Full-Text Search untuk mendeteksi parafrase dan jiplakan kata kunci presisi.',
-      icon: Layers
-    },
-    {
-      title: 'Transparansi Human-in-the-Loop',
-      shortLabel: 'Verifikasi Aslab',
-      desc: 'Asisten Laboratorium memegang kendali penuh untuk meninjau perbandingan dokumen secara berdampingan, mengoreksi skor, dan memberi nilai praktikum.',
-      icon: Users
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-[#F7F3E9] text-[#0D1B2A] relative font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-[#081018] text-[#F7F3E9] relative font-sans overflow-x-hidden selection:bg-[#D4AF37]/30 selection:text-white">
       
-      {/* Header Navigasi */}
-      <header className="sticky top-0 w-full h-[72px] bg-[#F7F3E9]/95 backdrop-blur-md border-b-2 border-[#0D1B2A] px-[21px] md:px-[34px] flex justify-between items-center z-30 select-none">
-        
-        {/* Struktur Kiri: Brand Block */}
-        <div className="flex items-center gap-3">
-          <Logo size={42} />
-          <div className="hidden sm:flex flex-col text-left leading-tight">
-            <span className="font-brutalism font-black text-xs text-[#0D1B2A] tracking-wider">VERITAS</span>
-            <span className="text-[10px] font-mono text-[#415A77] font-semibold">STITEK BONTANG</span>
+      {/* Background Atmospheric Glow & Subtle Vignette */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[550px] bg-gradient-to-b from-[#152238]/70 via-[#0D1B2A]/40 to-transparent blur-3xl opacity-75" />
+        <div className="absolute top-[35%] right-[5%] w-[450px] h-[450px] bg-[#D4AF37]/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[20%] left-[5%] w-[500px] h-[500px] bg-[#415A77]/10 blur-[140px] rounded-full" />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 1. FLOATING PILL NAVBAR (Inspired by Hirael Floating Capsule)            */}
+      {/* ========================================================================= */}
+      <header className="fixed top-5 left-1/2 -translate-x-1/2 z-40 w-[min(94%,880px)] select-none">
+        <div className="bg-[#0D1B2A]/85 hover:bg-[#0D1B2A]/95 text-[#F7F3E9] border border-[#415A77]/30 backdrop-blur-xl rounded-full px-4 sm:px-6 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] flex items-center justify-between transition-all duration-300">
+          
+          {/* Sisi Kiri: Brand Logo & Title */}
+          <div 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-2.5 cursor-pointer group"
+          >
+            <Logo size={24} variant="transparent" />
+            <div className="flex items-center gap-1">
+              <span className="font-bold text-xs tracking-wider text-[#F7F3E9] group-hover:text-white transition-colors">VERITAS</span>
+              <span className="text-[#D4AF37] text-xs font-mono font-bold">*</span>
+            </div>
           </div>
-        </div>
 
-        {/* Struktur Kanan: Action Block */}
-        <div className="flex items-center gap-3">
-          {session?.user ? (
-            /* User Profile & Action Dropdown */
-            <div className="relative" ref={profileDropdownRef}>
-              <button 
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-[#F7F3E9] border-2 border-[#0D1B2A] hover:shadow-[2px_2px_0px_#D4AF37] rounded transition-all duration-150 cursor-pointer"
-              >
-                <div className="w-[26px] h-[26px] bg-[#0D1B2A] text-[#F7F3E9] rounded flex items-center justify-center text-[11px] font-bold">
-                  {session.user.nama ? session.user.nama[0].toUpperCase() : 'U'}
-                </div>
-                <span className="text-[12px] font-bold text-[#0D1B2A] max-w-[120px] truncate">
-                  {session.user.nama}
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#415A77] transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180 text-[#0D1B2A]' : ''}`} />
-              </button>
+          {/* Tengah: Navigasi Tautan Halus (Desktop) */}
+          <nav className="hidden md:flex items-center gap-6 text-[12px] text-slate-300 font-medium">
+            <button 
+              type="button"
+              onClick={() => scrollToSection('about-section')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Tentang
+            </button>
+            <button 
+              type="button"
+              onClick={() => scrollToSection('features-section')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Spesifikasi
+            </button>
+            <button 
+              type="button"
+              onClick={() => scrollToSection('closing-section')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Komitmen
+            </button>
+          </nav>
 
-              {/* Dropdown Menu */}
-              {isProfileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded border-2 border-[#0D1B2A] shadow-[3px_3px_0px_#D4AF37] py-1.5 z-50 animate-fade-in">
-                  <div className="px-4 py-2.5 border-b border-[#415A77]/15">
-                    <p className="text-xs font-bold text-[#0D1B2A] truncate">{session.user.nama}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-none bg-[#D4AF37]" />
-                      <span className="text-[10px] font-mono text-[#415A77] font-bold uppercase tracking-wider">
-                        {session.user.role || session.user.profil?.peran || 'USER'}
-                      </span>
+          {/* Sisi Kanan: Action Button / User Profile Dropdown */}
+          <div className="flex items-center gap-2">
+            {session?.user ? (
+              <div className="relative" ref={profileDropdownRef}>
+                <button 
+                  type="button"
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center gap-2 pl-2 pr-3 py-1 bg-[#152238] hover:bg-[#1B2B3E] border border-[#415A77]/40 rounded-full transition-all cursor-pointer"
+                >
+                  <div className="w-5 h-5 bg-[#D4AF37] text-[#0D1B2A] rounded-full flex items-center justify-center text-[10px] font-bold">
+                    {session.user.nama ? session.user.nama[0].toUpperCase() : 'U'}
+                  </div>
+                  <span className="text-xs font-semibold text-[#F7F3E9] max-w-[90px] truncate">
+                    {session.user.nama}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-[#0D1B2A] border border-[#415A77]/40 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-3.5 py-2 border-b border-[#415A77]/20">
+                      <p className="text-xs font-bold text-white truncate">{session.user.nama}</p>
+                      <p className="text-[10px] text-[#D4AF37] font-mono mt-0.5">
+                        {session.user.role || session.user.profil?.peran || 'ASLAB'}
+                      </p>
+                    </div>
+                    <div className="p-1 space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          handleActionClick();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-200 hover:text-white hover:bg-[#152238] rounded-xl transition-colors text-left cursor-pointer"
+                      >
+                        <LayoutDashboard className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>Panel Dasbor</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          logoutMutation.mutate();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Keluar Sesi</span>
+                      </button>
                     </div>
                   </div>
-                  <div className="p-1 space-y-0.5">
-                    <button
-                      onClick={() => {
-                        setIsProfileDropdownOpen(false);
-                        handleActionClick();
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#0D1B2A] hover:bg-[#F7F3E9] rounded transition-colors text-left cursor-pointer"
-                    >
-                      <LayoutDashboard className="w-4 h-4 text-[#0D1B2A]" />
-                      <span>Panel Dasbor</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsProfileDropdownOpen(false);
-                        logoutMutation.mutate();
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded transition-colors text-left cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4 text-rose-500" />
-                      <span>Keluar Sesi</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Button
-                variant="brutalist-outline"
-                size="sm"
-                onClick={() => startSwipeAndNavigate('/login?register=true')}
-              >
-                Daftar ASLAB
-              </Button>
-              <Button
-                variant="brutalist"
-                size="sm"
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
                 onClick={handleActionClick}
-                className="gap-1.5"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#F7F3E9] hover:bg-white text-[#0D1B2A] rounded-full text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
               >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk ke Sistem</span>
-              </Button>
-            </>
-          )}
+                <span>Masuk</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Main Story Container (Smooth Scale/Fade saat Transisi Layar) */}
-      <main className={`relative z-10 flex-1 flex flex-col w-full max-w-7xl mx-auto px-[21px] md:px-[55px] gap-[120px] md:gap-[180px] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      {/* Main Content Area */}
+      <main className={`relative z-10 w-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isSwiping ? 'scale-[0.985] opacity-80 filter blur-[0.3px]' : 'scale-100 opacity-100'
       }`}>
-        
-        {/* ========================================================================= */}
-        {/* Section 1: Hero Section (Viewport 1 - 100vh) */}
-        {/* ========================================================================= */}
-        <section className="min-h-[calc(100vh-72px)] flex flex-col justify-center items-center text-center relative py-[55px] md:py-[89px] z-10">
-          <div className="max-w-4xl flex flex-col items-center mx-auto">
-            
 
-            {/* Judul Utama Kokoh dan Berwibawa */}
-            <div className="w-full max-w-4xl flex flex-col items-center justify-center select-none mb-6">
-              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-brutalism font-black tracking-tighter text-[#0D1B2A] leading-none select-none flex items-center justify-center min-h-[1.15em]">
-                VERITAS
+        {/* ========================================================================= */}
+        {/* 2. HERO SECTION (Inspired by Image 1: Giant Title + Narrative + Pill CTA)*/}
+        {/* ========================================================================= */}
+        <section className="min-h-screen pt-36 pb-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto flex flex-col justify-between">
+          
+          {/* Eyebrow Label */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span className="text-[11px] font-mono tracking-[0.25em] text-[#D4AF37] uppercase font-bold">
+              PLATFORM VERIFIKASI ORISINALITAS • STITEK BONTANG
+            </span>
+          </div>
+
+          {/* Hero Main Block (Asimetris: Kiri Title Raksasa, Kanan Deskripsi & CTA) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end my-auto py-8">
+            
+            {/* Sisi Kiri: Judul Raksasa "VERITAS*" */}
+            <div className="lg:col-span-8 select-none">
+              <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10.5rem] xl:text-[12rem] font-black font-brutalism tracking-tighter text-[#F7F3E9] leading-none flex items-baseline">
+                <span>Veritas</span>
+                <span className="text-[#D4AF37] font-mono ml-1 sm:ml-2 text-[0.6em] leading-none">*</span>
               </h1>
-
-              {/* Subtitle Dinamis Typewriting */}
-              <div className="flex items-center gap-2 mt-4 text-[11px] sm:text-xs font-mono tracking-widest text-[#415A77] uppercase font-bold select-none min-h-[1.5em]">
-                <span className="w-3 h-0.5 bg-[#D4AF37] shrink-0" />
-                <TypewriterText
-                  words={[
-                    "Validasi Orisinalitas Laporan Praktikum",
-                    "Pemetaan Geometri Spasial PDF Presisi",
-                    "Pencegahan Bias Template Modul Otomatis"
-                  ]}
-                  typingSpeed={60}
-                  deletingSpeed={30}
-                  pauseDuration={3200}
-                  loop={true}
-                  cursor={true}
-                  cursorChar="▍"
-                  cursorClassName="text-[#D4AF37] ml-1 text-[10px]"
-                />
-              </div>
             </div>
 
-            {/* Paragraf Deskripsi */}
-            <p className="text-[#415A77] font-readable text-xs sm:text-sm leading-relaxed max-w-lg mx-auto text-center mb-8">
-              Platform verifikasi orisinalitas laporan praktikum mahasiswa STITEK Bontang. Memadukan penelusuran hibrida RRF, pemetaan spasial geometri PDF, dan filter bias template modul untuk keputusan akademik yang adil dan objektif.
-            </p>
-
-            {/* Tombol Aksi Utama */}
-            <Button
-              variant="brutalist-brass"
-              size="lg"
-              onClick={() => scrollToSection('about-section')}
-              className="px-8 py-3.5 h-auto text-xs cursor-pointer group gap-2"
-            >
-              <span>Mulai Penelusuran</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#0D1B2A]" />
-            </Button>
-          </div>
-
-          {/* Indikator Gulir Bawah */}
-          <div 
-            onClick={() => scrollToSection('about-section')}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer select-none text-[#415A77] hover:text-[#0D1B2A] transition-colors"
-          >
-            <span className="text-[10px] font-mono tracking-widest uppercase font-semibold">Scroll Down</span>
-            <ArrowDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* Section 2: Deskripsi Sistem */}
-        {/* ========================================================================= */}
-        <section id="about-section" className="min-h-[85vh] flex flex-col justify-center items-center py-[55px] text-center z-10">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="space-y-3 flex flex-col items-center">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#0D1B2A] text-[10px] font-mono tracking-widest text-[#0D1B2A] uppercase font-bold select-none shadow-[2px_2px_0px_#D4AF37] rounded">
-                <span className="w-1.5 h-1.5 bg-[#D4AF37]"></span>
-                <span>Tujuan Akademik</span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-brutalism font-bold text-[#0D1B2A] select-none">TENTANG SISTEM</h2>
-            </div>
-
-            {/* Animasi ScrollReveal Teks Besar & Bold */}
-            <ScrollReveal
-              baseOpacity={0.08}
-              enableBlur={true}
-              baseRotation={0}
-              blurStrength={5}
-              wordAnimationEnd="center center+=10%"
-              containerClassName="mx-auto"
-              textClassName="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-brutalism font-black tracking-tight text-[#0D1B2A] leading-relaxed"
-            >
-              VERITAS merupakan sistem cerdas yang menganalisis setiap laporan praktikum mahasiswa STITEK Bontang secara objektif, mendeteksi kesamaan semantik, memetakan koordinat kesamaan langsung pada lembar PDF asli, serta mengisolasi template praktikum standar guna menegakkan kejujuran akademik secara terukur.
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* Section 3: Connected Pipeline Deteksi */}
-        {/* ========================================================================= */}
-        <section 
-          ref={pipelineSectionRef}
-          className="min-h-[85vh] flex flex-col justify-center py-[55px] z-10"
-        >
-          <div className="max-w-5xl mx-auto w-full space-y-16 relative">
-            <div className="text-center space-y-3 flex flex-col items-center">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#0D1B2A] text-[10px] font-mono tracking-widest text-[#0D1B2A] uppercase font-bold select-none shadow-[2px_2px_0px_#D4AF37] rounded">
-                <span className="w-1.5 h-1.5 bg-[#D4AF37]"></span>
-                <span>Alur Verifikasi</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-brutalism font-bold text-[#0D1B2A]">Connected Pipeline</h2>
-              <p className="text-xs sm:text-sm text-[#415A77] font-readable max-w-md mx-auto">
-                Tahapan sistematis pemrosesan naskah laporan praktikum dari pengunggahan hingga keputusan asisten laboratorium.
+            {/* Sisi Kanan: Paragraf Narasi Eksklusif + Pill CTA Button */}
+            <div className="lg:col-span-4 flex flex-col items-start lg:items-start gap-6 pb-2 lg:pb-4">
+              <p className="text-slate-300 text-sm sm:text-[14.5px] leading-relaxed font-readable">
+                Ekosistem analitik cerdas pendeteksi orisinalitas naskah praktikum mahasiswa STITEK Bontang. Memadukan penelusuran vektor dense, filter bias template modular, dan perbandingan spasial geometri PDF transparan.
               </p>
-            </div>
 
-            {/* Pipeline Container */}
-            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-2 w-full py-6 px-4">
-              
-              {/* Langkah 1 */}
-              <div 
-                ref={(el) => { stepTextsRef.current[0] = el; }}
-                className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-[260px] z-10"
-              >
-                <div 
-                  ref={(el) => { stepNumsRef.current[0] = el; }}
-                  className="w-16 h-16 rounded bg-white border-2 border-[#0D1B2A] text-[#0D1B2A] flex items-center justify-center font-brutalism font-black text-2xl shadow-[2px_2px_0px_#D4AF37] transition-all duration-300 select-none"
-                >
-                  01
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 justify-center md:justify-start text-[#0D1B2A]">
-                    <Upload className="w-4 h-4 text-[#D4AF37]" />
-                    <h3 className="text-base font-brutalism font-bold uppercase tracking-wider">Unggah Berkas</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#415A77] font-readable leading-relaxed">
-                    Naskah laporan PDF diunggah ke repositori, baik satuan oleh asisten maupun sinkronisasi massal per kelas praktikum.
-                  </p>
-                </div>
-              </div>
-
-              {/* Garis Konektor SVG 1 Adaptif */}
-              <div className="flex-1 h-[2px] mx-4 relative hidden md:block select-none" style={{ minWidth: '80px' }}>
-                <svg className="w-full h-[4px] absolute top-1/2 -translate-y-1/2 overflow-visible" viewBox="0 0 100 4" preserveAspectRatio="none" fill="none">
-                  <line x1="0" y1="2" x2="100" y2="2" stroke="rgba(65, 90, 119, 0.2)" strokeWidth="3" strokeLinecap="round" />
-                  <line 
-                    ref={line1Ref}
-                    pathLength="100"
-                    x1="0" y1="2" x2="100" y2="2" 
-                    stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" 
-                    strokeDasharray="100" strokeDashoffset="100"
-                  />
-                </svg>
-              </div>
-
-              {/* Langkah 2 */}
-              <div 
-                ref={(el) => { stepTextsRef.current[1] = el; }}
-                className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-[260px] z-10"
-              >
-                <div 
-                  ref={(el) => { stepNumsRef.current[1] = el; }}
-                  className="w-16 h-16 rounded bg-white border-2 border-[#0D1B2A] text-[#0D1B2A] flex items-center justify-center font-brutalism font-black text-2xl shadow-[2px_2px_0px_#D4AF37] transition-all duration-300 select-none"
-                >
-                  02
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 justify-center md:justify-start text-[#0D1B2A]">
-                    <Cpu className="w-4 h-4 text-[#D4AF37]" />
-                    <h3 className="text-base font-brutalism font-bold uppercase tracking-wider">Analisis Hibrida</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#415A77] font-readable leading-relaxed">
-                    Filter 5 lapis memilah template modul praktikum, dilanjutkan pencocokan vektor RRF dan pembatas guardrail semantik.
-                  </p>
-                </div>
-              </div>
-
-              {/* Garis Konektor SVG 2 Adaptif */}
-              <div className="flex-1 h-[2px] mx-4 relative hidden md:block select-none" style={{ minWidth: '80px' }}>
-                <svg className="w-full h-[4px] absolute top-1/2 -translate-y-1/2 overflow-visible" viewBox="0 0 100 4" preserveAspectRatio="none" fill="none">
-                  <line x1="0" y1="2" x2="100" y2="2" stroke="rgba(65, 90, 119, 0.2)" strokeWidth="3" strokeLinecap="round" />
-                  <line 
-                    ref={line2Ref}
-                    pathLength="100"
-                    x1="0" y1="2" x2="100" y2="2" 
-                    stroke="#D4AF37" strokeWidth="4" strokeLinecap="round" 
-                    strokeDasharray="100" strokeDashoffset="100"
-                  />
-                </svg>
-              </div>
-
-              {/* Langkah 3 */}
-              <div 
-                ref={(el) => { stepTextsRef.current[2] = el; }}
-                className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-[260px] z-10"
-              >
-                <div 
-                  ref={(el) => { stepNumsRef.current[2] = el; }}
-                  className="w-16 h-16 rounded bg-white border-2 border-[#0D1B2A] text-[#0D1B2A] flex items-center justify-center font-brutalism font-black text-2xl shadow-[2px_2px_0px_#D4AF37] transition-all duration-300 select-none"
-                >
-                  03
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 justify-center md:justify-start text-[#0D1B2A]">
-                    <BarChart className="w-4 h-4 text-[#D4AF37]" />
-                    <h3 className="text-base font-brutalism font-bold uppercase tracking-wider">Verifikasi Aslab</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#415A77] font-readable leading-relaxed">
-                    Hasil pemetaan spasial tersaji berdampingan untuk diperiksa asisten lab sebelum penetapan nilai mutu laporan.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* Section 4: Arsitektur Deteksi, Pipeline Interaktif */}
-        {/* ========================================================================= */}
-        <section className="min-h-[85vh] flex flex-col justify-center py-[55px] z-10">
-          <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 space-y-10">
-            <div className="text-center space-y-3 flex flex-col items-center">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-[#0D1B2A] text-[10px] font-mono tracking-widest text-[#0D1B2A] uppercase font-bold select-none shadow-[2px_2px_0px_#D4AF37] rounded">
-                <span className="w-1.5 h-1.5 bg-[#D4AF37]"></span>
-                <span>Teknologi</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-brutalism font-bold text-[#0D1B2A]">Arsitektur Deteksi Orisinalitas</h2>
-              <p className="text-xs sm:text-sm text-[#415A77] font-readable max-w-md mx-auto">
-                Empat tahap pemrosesan yang bekerja berurutan untuk memverifikasi keaslian setiap laporan praktikum.
-              </p>
-            </div>
-
-            {/* Pipeline Strip: 4 tahap horizontal */}
-            <div className="relative">
-              <div className="pipeline-strip" role="tablist" aria-label="Tahap deteksi orisinalitas">
-                {pipelineSteps.map((step, idx) => {
-                  const IconComp = step.icon;
-                  const isActive = activeFeature === idx;
-                  return (
-                    <div key={idx} className="pipeline-step">
-                      {/* Garis koneksi ke tahap berikutnya */}
-                      {idx < pipelineSteps.length - 1 && (
-                        <div
-                          className="pipeline-connector hidden md:block"
-                          style={{
-                            left: '50%',
-                            width: '100%'
-                          }}
-                        />
-                      )}
-                      <button
-                        role="tab"
-                        type="button"
-                        className="pipeline-step-btn"
-                        aria-expanded={isActive}
-                        aria-controls={`pipeline-panel-${idx}`}
-                        aria-selected={isActive}
-                        id={`pipeline-tab-${idx}`}
-                        onClick={() => setActiveFeature(isActive ? null : idx)}
-                      >
-                        <span className="pipeline-step-index">0{idx + 1}</span>
-                        <div className="pipeline-step-icon">
-                          <IconComp className="w-5 h-5" />
-                        </div>
-                        <span className="pipeline-step-label">{step.shortLabel}</span>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Panel detail di bawah strip */}
-              <div className={`grid-transition-height mt-4 ${activeFeature !== null ? 'grid-transition-height-open' : 'grid-transition-height-closed'}`}>
-                <div className="grid-transition-inner">
-                  {activeFeature !== null && (() => {
-                    const step = pipelineSteps[activeFeature];
-                    const IconComp = step.icon;
-                    return (
-                      <div
-                        className="pipeline-detail-panel"
-                        id={`pipeline-panel-${activeFeature}`}
-                        role="tabpanel"
-                        aria-labelledby={`pipeline-tab-${activeFeature}`}
-                        style={{
-                          ['--arrow-offset' as string]: `calc(${(activeFeature / (pipelineSteps.length - 1)) * 100}% + ${activeFeature === 0 ? '40px' : activeFeature === pipelineSteps.length - 1 ? '-40px' : '0px'})`
-                        }}
-                      >
-                        <style>{`.pipeline-detail-panel::before { left: var(--arrow-offset, 50%); }`}</style>
-                        <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-md bg-[#0D1B2A] text-[#D4AF37] shrink-0 shadow-xs">
-                            <IconComp className="w-5 h-5" />
-                          </div>
-                          <div className="space-y-1.5 min-w-0">
-                            <h3 className="text-sm sm:text-base font-brutalism font-bold text-[#0D1B2A]">
-                              {step.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-[#415A77] font-readable leading-relaxed">
-                              {step.desc}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* Section 5: Komitmen Integritas Ilmiah & CTA */}
-        {/* ========================================================================= */}
-        <section className="min-h-[70vh] flex flex-col justify-center items-center py-[55px] text-center relative z-10">
-          <div className="w-full max-w-3xl mx-auto bg-white border-2 border-[#0D1B2A] shadow-[6px_6px_0px_#D4AF37] p-8 md:p-14 space-y-6 relative rounded">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F7F3E9] border border-[#0D1B2A]/30 text-[10px] font-mono tracking-widest text-[#0D1B2A] uppercase font-bold select-none rounded">
-              <span className="w-2 h-2 bg-[#D4AF37] inline-block"></span>
-              <span>STANDAR AKADEMIK STITEK BONTANG</span>
-            </div>
-
-            {/* Judul Komitmen Integritas */}
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-brutalism font-black text-[#0D1B2A] leading-tight select-none">
-              Menjaga Orisinalitas, Menegakkan Integritas Ilmiah
-            </h2>
-            
-            <p className="text-[#415A77] font-readable text-xs sm:text-sm leading-relaxed max-w-lg mx-auto">
-              Penyusunan naskah praktikum secara mandiri melatih penalaran analitis dan etika penelitian mahasiswa. Platform Veritas memfasilitasi verifikasi orisinalitas berbasis bukti fisik nyata guna mewujudkan evaluasi laboratorium yang adil dan objektif.
-            </p>
-
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button
-                variant="brutalist-brass"
-                size="lg"
+              {/* Pill Button Kapsul Lonjong dengan Ikon Panah Bulat */}
+              <button
+                type="button"
                 onClick={handleActionClick}
-                className="px-8 py-3 h-auto text-xs cursor-pointer flex items-center justify-center gap-2 group w-full sm:w-auto"
+                className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#F7F3E9] hover:bg-white text-[#0D1B2A] font-semibold text-xs sm:text-sm shadow-[0_8px_24px_rgba(247,243,233,0.12)] transition-all duration-200 hover:scale-[1.02] active:scale-98 cursor-pointer"
               >
-                <span>{session?.user ? 'Buka Panel Dasbor' : 'Masuk ke Platform'}</span>
-                <LogIn className="w-4 h-4 text-[#0D1B2A] group-hover:translate-x-0.5 transition-transform" />
-              </Button>
-              {!session?.user && (
-                <Button
-                  variant="brutalist-outline"
-                  size="lg"
-                  onClick={() => startSwipeAndNavigate('/login?register=true')}
-                  className="px-6 py-3 h-auto text-xs w-full sm:w-auto"
-                >
-                  <span>Daftar Asisten Lab</span>
-                </Button>
-              )}
+                <span>{session?.user ? 'Buka Panel Dasbor' : 'Eksplorasi Naskah'}</span>
+                <span className="w-6 h-6 rounded-full bg-[#0D1B2A] text-white flex items-center justify-center text-xs group-hover:translate-x-0.5 transition-transform">
+                  →
+                </span>
+              </button>
             </div>
           </div>
+
+          {/* Bawah Hero: Indikator Scroll & Meta Label */}
+          <div className="flex items-center justify-between border-t border-[#415A77]/25 pt-6 text-[11px] font-mono text-slate-400">
+            <span>MULTIMODAL RAG • QDRANT VECTOR • ELYSIAJS</span>
+            <button
+              type="button"
+              onClick={() => scrollToSection('about-section')}
+              className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Scroll ke bawah</span>
+              <span>↓</span>
+            </button>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 3. EDITORIAL STATEMENT SECTION (Inspired by Image 2: Mixed Typography)  */}
+        {/* ========================================================================= */}
+        <section id="about-section" className="py-28 sm:py-36 px-6 sm:px-10 lg:px-16 max-w-6xl mx-auto text-center relative">
+          
+          {/* Eyebrow Label */}
+          <div className="mb-6 flex justify-center">
+            <span className="text-[11px] font-mono font-bold tracking-[0.3em] text-[#D4AF37] uppercase">
+              INTEGRITAS ILMIAH
+            </span>
+          </div>
+
+          {/* Kalimat Pernyataan Utama Campuran: Sans-Serif + High-Contrast Serif Italic */}
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-[#F7F3E9] leading-[1.25] tracking-tight max-w-5xl mx-auto mb-10 select-none">
+            Veritas adalah ekosistem analitik akademik,{' '}
+            <span className="font-editorial-italic font-normal text-[#D4AF37] text-[1.12em] tracking-normal">
+              ditempa dari presisi penalaran AI.
+            </span>{' '}
+            Kami memetakan kesamaan teks, grafik, dan struktur dokumen menjadi skor objektif yang dapat dipertanggungjawabkan.
+          </h2>
+
+          {/* Sub-paragraf Keterangan Halus */}
+          <p className="text-slate-400 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto font-readable">
+            Melayani sivitas akademika Teknik Informatika dan Sistem Informasi STITEK Bontang. Membantu asisten dan dosen memverifikasi ratusan berkas praktikum dengan transparan tanpa kompromi bias template.
+          </p>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 4. FEATURE SHOWCASE CARDS (Inspired by Image 3: 4 Studio-Grade Cards Rail) */}
+        {/* ========================================================================= */}
+        <section id="features-section" className="py-24 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto">
+          
+          {/* Section Header */}
+          <div className="mb-14 text-center max-w-2xl mx-auto space-y-2">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold font-brutalism text-[#F7F3E9] tracking-tight">
+              Research-grade precision for academic excellence.
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 font-readable">
+              Dirancang untuk objektivitas murni. Didukung kecerdasan buatan multimodal.
+            </p>
+          </div>
+
+          {/* The 4-Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            
+            {/* KARTU 1: Inspection Canvas Preview Card (Match "Your creative canvas") */}
+            <div className="bg-[#121E2E]/90 border border-[#415A77]/30 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] relative overflow-hidden group hover:border-[#D4AF37]/50 transition-all duration-300">
+              <div className="space-y-3 z-10">
+                <div className="w-8 h-8 rounded-lg bg-[#1B2B3E] border border-[#415A77]/40 flex items-center justify-center text-[#D4AF37]">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase tracking-wider">Kanvas Visual</span>
+                  <h4 className="text-base font-bold text-[#F7F3E9]">Inspeksi Berdampingan</h4>
+                </div>
+              </div>
+
+              {/* Visual Graphic Representation */}
+              <div className="my-auto py-4">
+                <div className="p-3 bg-[#0D1B2A]/90 border border-[#415A77]/30 rounded-xl space-y-2 font-mono text-[10px]">
+                  <div className="flex items-center justify-between text-slate-400 pb-1 border-b border-[#415A77]/20">
+                    <span>Halaman 12 • Kolom B</span>
+                    <span className="text-[#D4AF37] font-bold">96.4% Match</span>
+                  </div>
+                  <div className="space-y-1 text-slate-300 text-[9.5px]">
+                    <div className="h-1.5 w-full bg-[#D4AF37]/40 rounded" />
+                    <div className="h-1.5 w-4/5 bg-[#D4AF37]/25 rounded" />
+                    <div className="h-1.5 w-2/3 bg-slate-700 rounded" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="z-10 pt-2 border-t border-[#415A77]/20">
+                <span className="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors">
+                  Ruang inspeksi spasial.
+                </span>
+              </div>
+            </div>
+
+            {/* KARTU 2: Fitur 01 - Pemetaan Spasial Geometri PDF */}
+            <div className="bg-[#152238]/85 border border-[#415A77]/30 hover:border-[#D4AF37]/50 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] transition-all duration-300 hover:-translate-y-1 group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-[#1B2B3E] border border-[#415A77]/40 flex items-center justify-center text-[#D4AF37]">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400">01</span>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-bold text-[#F7F3E9] mb-3">Pemetaan Spasial Geometri</h4>
+                  <ul className="space-y-2 text-xs text-slate-300">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Koordinat fisik lembar PDF asli</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Deteksi nomor halaman presisi</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Perbandingan visual berdampingan</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Jejak audit perubahan naskah</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleActionClick}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 group-hover:text-[#D4AF37] transition-colors mt-6 cursor-pointer text-left"
+              >
+                <span>Pelajari geometri</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* KARTU 3: Fitur 02 - Filter Bias Template 5 Lapis */}
+            <div className="bg-[#152238]/85 border border-[#415A77]/30 hover:border-[#D4AF37]/50 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] transition-all duration-300 hover:-translate-y-1 group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-[#1B2B3E] border border-[#415A77]/40 flex items-center justify-center text-[#D4AF37]">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400">02</span>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-bold text-[#F7F3E9] mb-3">Filter Bias Template 5 Lapis</h4>
+                  <ul className="space-y-2 text-xs text-slate-300">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Eliminasi instruksi modul praktikum</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Proteksi parafrase akademis baku</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Deteksi centroid Prototypical Network</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Pencegahan false positive tuduhan</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleActionClick}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 group-hover:text-[#D4AF37] transition-colors mt-6 cursor-pointer text-left"
+              >
+                <span>Pelajari filter bias</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* KARTU 4: Fitur 03 - Pencarian Hibrida RRF (k = 60) */}
+            <div className="bg-[#152238]/85 border border-[#415A77]/30 hover:border-[#D4AF37]/50 rounded-2xl p-6 flex flex-col justify-between min-h-[360px] transition-all duration-300 hover:-translate-y-1 group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-[#1B2B3E] border border-[#415A77]/40 flex items-center justify-center text-[#D4AF37]">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400">03</span>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-bold text-[#F7F3E9] mb-3">Pencarian Hibrida RRF</h4>
+                  <ul className="space-y-2 text-xs text-slate-300">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Dense Vector Search via Qdrant</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Full-Text Search PostgreSQL</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Reciprocal Rank Fusion (k = 60)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span>Cross-Encoder reranking komparasi</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleActionClick}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 group-hover:text-[#D4AF37] transition-colors mt-6 cursor-pointer text-left"
+              >
+                <span>Pelajari formula RRF</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 5. CLOSING CTA & WATERMARK FOOTER (Inspired by Image 4)                  */}
+        {/* ========================================================================= */}
+        <section id="closing-section" className="pt-28 pb-10 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto relative overflow-hidden">
+          
+          {/* Closing Statement Header */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-20">
+            <div className="space-y-4 max-w-2xl">
+              <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
+                INTEGRITAS AKADEMIK
+              </span>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold font-brutalism text-[#F7F3E9] leading-tight">
+                Menjaga martabat ilmiah,{' '}
+                <span className="font-editorial-italic font-normal text-[#D4AF37] text-[1.12em]">
+                  satu naskah demi satu naskah.
+                </span>
+              </h2>
+            </div>
+
+            {/* Pill CTA Button (Match Image 4 "Start a project ↗") */}
+            <button
+              type="button"
+              onClick={handleActionClick}
+              className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-[#F7F3E9] hover:bg-white text-[#0D1B2A] font-semibold text-sm shadow-[0_8px_28px_rgba(247,243,233,0.15)] transition-all duration-200 hover:scale-[1.02] active:scale-98 cursor-pointer self-start lg:self-auto shrink-0"
+            >
+              <span>{session?.user ? 'Buka Panel Dasbor' : 'Mulai Pemeriksaan'}</span>
+              <span className="w-6 h-6 rounded-full bg-[#0D1B2A] text-white flex items-center justify-center text-xs group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                ↗
+              </span>
+            </button>
+          </div>
+
+          {/* Hairline Divider */}
+          <div className="border-t border-[#415A77]/25 w-full pt-12 pb-16">
+            
+            {/* 3-Column Footer Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-xs font-readable text-slate-400">
+              
+              {/* Kolom 1: Fitur Sistem */}
+              <div className="space-y-3">
+                <span className="font-mono text-[11px] font-bold text-slate-200 uppercase tracking-wider block">
+                  SISTEM
+                </span>
+                <ul className="space-y-2">
+                  <li><button type="button" onClick={handleActionClick} className="hover:text-white transition-colors cursor-pointer">Direktori Naskah Laporan</button></li>
+                  <li><button type="button" onClick={handleActionClick} className="hover:text-white transition-colors cursor-pointer">Pemeriksaan Kesamaan Geometri</button></li>
+                  <li><button type="button" onClick={handleActionClick} className="hover:text-white transition-colors cursor-pointer">Rekapitulasi Matriks Nilai</button></li>
+                  <li><button type="button" onClick={handleActionClick} className="hover:text-white transition-colors cursor-pointer">Audit Logs Aktivitas</button></li>
+                </ul>
+              </div>
+
+              {/* Kolom 2: Arsitektur Teknologi */}
+              <div className="space-y-3">
+                <span className="font-mono text-[11px] font-bold text-slate-200 uppercase tracking-wider block">
+                  TEKNOLOGI
+                </span>
+                <ul className="space-y-2 text-slate-400">
+                  <li>Qdrant Vector Database Engine</li>
+                  <li>FastAPI Python Multimodal Agent</li>
+                  <li>Bun & ElysiaJS High-Performance Gateway</li>
+                  <li>PyMuPDF Spatial Coordinate Extraction</li>
+                </ul>
+              </div>
+
+              {/* Kolom 3: Lembaga & Kontak */}
+              <div className="space-y-3">
+                <span className="font-mono text-[11px] font-bold text-slate-200 uppercase tracking-wider block">
+                  INSTITUSI
+                </span>
+                <p className="leading-relaxed">
+                  Sekolah Tinggi Teknologi Bontang (STITEK)<br />
+                  Laboratorium Komputer & Informatika<br />
+                  Kota Bontang, Kalimantan Timur
+                </p>
+                <p className="text-[#D4AF37] font-mono text-[11px]">
+                  laboratorium@stitek.ac.id
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* GHOST WATERMARK RAKSASA DI LATAR BELAKANG FOOTER (Inspired by Image 4 "Hirael" Ghost Logo) */}
+          <div className="w-full overflow-hidden select-none pointer-events-none mt-4 -mb-10 text-center opacity-15">
+            <span className="block text-[15vw] font-black font-brutalism tracking-tighter text-slate-400 leading-none">
+              VERITAS
+            </span>
+          </div>
+
+          {/* Baris Hak Cipta Bawah */}
+          <div className="pt-6 border-t border-[#415A77]/20 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-slate-400 gap-2">
+            <span>© {new Date().getFullYear()} STITEK Bontang. Hak Cipta Dilindungi Undang-Undang.</span>
+            <span>Versi Produksi 2.0 • Multimodal AI</span>
+          </div>
+
         </section>
 
       </main>
-
-      {/* Footer */}
-      <footer className="w-full py-8 text-[11px] text-[#415A77] border-t-2 border-[#0D1B2A] bg-white/60 font-mono select-none z-20 flex flex-col items-center justify-center gap-2.5">
-        <Logo size={24} variant="transparent" />
-        <div className="text-center px-4">
-          © {new Date().getFullYear()} Sekolah Tinggi Teknologi Bontang. Sistem Deteksi Orisinalitas Laporan Praktikum.
-        </div>
-      </footer>
 
       {/* Curved Box Wipe Transition Overlay (Welcome -> Login) */}
       {isSwiping && (
