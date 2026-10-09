@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useSession } from '../api/auth';
+import { useSession, useLogout } from '../api/auth';
 import { 
   LayoutDashboard, 
   Users, 
@@ -26,6 +26,7 @@ const STORAGE_KEY = 'veritas-sidebar-collapsed';
 
 export default function Sidebar() {
   const { data: session } = useSession();
+  const logoutMutation = useLogout();
   const navigate = useNavigate();
   const role = session?.user?.profil?.peran || 'ASLAB';
   const userName = session?.user?.nama || 'Pengguna';
@@ -41,11 +42,11 @@ export default function Sidebar() {
   }, [isCollapsed]);
 
   const handleLogout = async () => {
-    const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
-    await fetch(`${backendUrl}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      await logoutMutation.mutateAsync();
+    } catch {
+      // Ignored
+    }
     navigate('/login');
   };
 

@@ -27,7 +27,7 @@ export default function Login() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
+  const backendUrl = (import.meta.env.VITE_API_BACKEND_URL || '').replace(/\/api\/?$/, '');
   const location = useLocation();
 
   // Scroll to top saat halaman Login terbuka

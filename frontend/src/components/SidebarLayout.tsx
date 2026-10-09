@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Chatbot from './chatbot';
-import { useSession } from '../api/auth';
+import { useSession, useLogout } from '../api/auth';
 import { Logo } from './ui/logo';
 import { 
   LayoutDashboard, 
@@ -24,14 +24,15 @@ import {
 // Side Tab Khusus Tampilan Layar Mobile (Ramping, Terintegrasi, Bebas dari Drawer / Modal Popup)
 function MobileSideTab({ role, userName }: { role: string; userName: string }) {
   const navigate = useNavigate();
+  const logoutMutation = useLogout();
   const initial = (userName || 'P').charAt(0).toUpperCase();
 
   const handleLogout = async () => {
-    const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
-    await fetch(`${backendUrl}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      await logoutMutation.mutateAsync();
+    } catch {
+      // Ignored
+    }
     navigate('/login');
   };
 

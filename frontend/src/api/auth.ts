@@ -18,12 +18,17 @@ export interface SessionData {
   rules: any[];
 }
 
+export const getBackendUrl = () => {
+  const url = import.meta.env.VITE_API_BACKEND_URL || '';
+  return url.replace(/\/api\/?$/, '');
+};
+
 export const useSession = () => {
   return useQuery<SessionData>({
     queryKey: ['session'],
     queryFn: async () => {
       try {
-        const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
+        const backendUrl = getBackendUrl();
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         const res = await fetch(`${backendUrl}/api/auth/session`, {
@@ -47,10 +52,10 @@ export const useSession = () => {
         return { user: null, rules: [] };
       }
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
     retry: 1,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   });
 };
 
@@ -58,23 +63,24 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
-      const res = await fetch(`${backendUrl}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        throw new Error('Gagal melakukan logout');
+      try {
+        const backendUrl = getBackendUrl();
+        await fetch(`${backendUrl}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+      } catch (err) {
+        console.warn('Gagal menghubungi endpoint logout server:', err);
       }
-      return res.json();
+      return { success: true };
     },
-    onSuccess: () => {
+    onSettled: () => {
       ability.update([]);
-      queryClient.clear();
       queryClient.setQueryData(['session'], { user: null, rules: [] });
+      queryClient.removeQueries({ queryKey: ['session'] });
     },
   });
 };
