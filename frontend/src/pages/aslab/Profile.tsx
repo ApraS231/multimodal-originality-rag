@@ -139,7 +139,7 @@ export default function Profile() {
   const assignedMatkulList = masterMatkul?.filter((m) => selectedMatkul.includes(m.id_mata_kuliah)) || [];
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-[#0D1B2A] animate-fade-in font-sans">
+    <div className="p-3.5 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 text-[#0D1B2A] animate-fade-in font-sans">
       {/* Header */}
       <PageHeader 
         title="Profil &"
@@ -148,7 +148,7 @@ export default function Profile() {
       />
 
       {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
         <StatCard
           title="Wewenang Sistem"
           value={profil?.peran || 'ASLAB'}

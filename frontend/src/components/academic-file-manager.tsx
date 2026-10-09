@@ -611,7 +611,7 @@ export default function AcademicFileManager({
   return (
     <div className={`space-y-4 ${className} font-sans text-[#0D1B2A]`}>
       {/* 1. HEADER FILE MANAGER MINIMALIS & BERSIH (1 Baris Utama + 1 Baris Kategori) */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-3">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-3 sm:p-4 shadow-2xs space-y-2.5 sm:space-y-3">
         {/* Baris 1: Breadcrumbs Trail & Tools */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           {/* Navigasi Breadcrumbs */}
@@ -871,7 +871,7 @@ export default function AcademicFileManager({
         </div>
       ) : viewMode === 'grid' ? (
         /* ================= GRID VIEW MINIMALIS ================= */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
           {displayedItems.map((item, idx) => {
             const isFolder = item.type !== 'laporan';
             const fileCount = countFilesInNode(item);
@@ -891,7 +891,7 @@ export default function AcademicFileManager({
                     handleOpenFolder(item);
                   }
                 }}
-                className={`bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all relative flex flex-col items-center justify-between text-center cursor-pointer group select-none min-h-[160px] ${
+                className={`bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-2.5 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all relative flex flex-col items-center justify-between text-center cursor-pointer group select-none min-h-[148px] sm:min-h-[160px] ${
                   item.type === 'laporan' ? 'hover:bg-slate-50/50' : ''
                 }`}
               >
@@ -1055,7 +1055,7 @@ export default function AcademicFileManager({
                   ) : (
                     <>
                       <h3 
-                        className="text-xs font-semibold text-slate-900 truncate w-full group-hover:text-emerald-700 transition-colors" 
+                        className="text-[11.5px] sm:text-xs font-semibold text-slate-900 line-clamp-2 w-full group-hover:text-[#0D1B2A] transition-colors leading-snug" 
                         title={item.name}
                       >
                         {item.name}

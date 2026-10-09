@@ -273,7 +273,7 @@ export default function Checker() {
   };
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6 text-[#0D1B2A] font-sans">
+    <div className="p-3.5 sm:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 text-[#0D1B2A] font-sans">
       {/* Header */}
       <PageHeader 
         title="Dokumen"
@@ -284,7 +284,7 @@ export default function Checker() {
             variant="outline"
             size="sm"
             onClick={() => navigate('/aslab/dashboard')}
-            className="flex items-center gap-2 text-xs font-semibold"
+            className="flex items-center gap-2 text-xs font-semibold w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Dasbor Asisten</span>
@@ -293,7 +293,7 @@ export default function Checker() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
         <StatCard
           title="Pipa Analisis"
           value="Hybrid RRF"
