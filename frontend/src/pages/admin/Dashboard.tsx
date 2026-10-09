@@ -1091,7 +1091,7 @@ export default function AdminDashboard() {
                         ? 'bg-[#0D1B2A] text-white' 
                         : 'bg-[#0D1B2A] border border-slate-700'
                     }`}>
-                      {msg.pengirim === 'USER' ? <User className="w-3.5 h-3.5" /> : <MascotAvatar size={24} label="Avatar AI" />}
+                      {msg.pengirim === 'USER' ? <User className="w-3.5 h-3.5" /> : <MascotAvatar size={24} hasWings={false} label="Avatar AI" />}
                     </div>
                     <div className={`p-3.5 rounded-lg text-[12px] leading-relaxed shadow-2xs overflow-hidden ${
                       msg.pengirim === 'USER' 

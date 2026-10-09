@@ -33,7 +33,7 @@ export function CoucouMochi({
   label = 'Mochi Companion AI',
   interactive = true,
   status = 'idle',
-  hasWings = false,
+  hasWings = true,
 }: CoucouMochiProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -234,7 +234,7 @@ export function CoucouMochi({
       ctx.scale(dpr, dpr);
 
       const W = size;
-      const R = W * 0.32;
+      const R = hasWings ? W * 0.27 : W * 0.32;
       const rx = R * 1.15;
       const ry = R * 0.88;
 

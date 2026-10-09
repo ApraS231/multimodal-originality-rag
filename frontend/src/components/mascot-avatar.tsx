@@ -13,6 +13,7 @@ interface MascotAvatarProps {
   reactionsUrl?: string;
   useSmoothCanvas?: boolean;
   status?: 'idle' | 'typing' | 'thinking' | 'success';
+  hasWings?: boolean;
 }
 
 export function MascotAvatar({
@@ -26,6 +27,7 @@ export function MascotAvatar({
   reactionsUrl = '/mascots/mochi-reactions.webp',
   useSmoothCanvas = true,
   status = 'idle',
+  hasWings = true,
 }: MascotAvatarProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -74,6 +76,7 @@ export function MascotAvatar({
             label={label}
             onClick={onClick}
             status={status}
+            hasWings={hasWings}
           />
         ) : (
           <Mascot

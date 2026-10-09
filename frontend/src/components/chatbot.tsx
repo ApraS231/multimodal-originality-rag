@@ -931,8 +931,12 @@ export default function Chatbot({
         } ${isSideDrawerOpen && mochiPos.edge === 'right' && !isOpen ? 'md:right-[464px] max-md:hidden' : ''}`}
         title={isDraggingMochi ? "Tarik dan lepas untuk menempel ke tepi" : (isOpen ? "Klik maskot untuk menutup obrolan" : "Tarik bebas atau klik untuk membuka obrolan")}
       >
+        {/* Efek Aura Halus di Belakang Mochi Bersayap */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-200/25 via-white/40 to-sky-200/25 blur-md pointer-events-none" />
+
         <CoucouMochi
           size={MOCHI_SIZE}
+          hasWings={true}
           label="Maskot Mochi Veritas AI STITEK Bontang"
           onClick={() => {
             // Ditangani secara halus melalui pointer up agar tidak bentrok dengan drag
