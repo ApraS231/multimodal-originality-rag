@@ -25,7 +25,7 @@ export const useSession = () => {
       try {
         const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         const res = await fetch(`${backendUrl}/api/auth/session`, {
           headers: {
             'Content-Type': 'application/json',
@@ -35,6 +35,7 @@ export const useSession = () => {
         });
         clearTimeout(timeoutId);
         if (!res.ok) {
+          ability.update([]);
           return { user: null, rules: [] };
         }
         const data = await res.json();
@@ -46,9 +47,10 @@ export const useSession = () => {
         return { user: null, rules: [] };
       }
     },
-    retry: false,
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 };
 
@@ -70,6 +72,7 @@ export const useLogout = () => {
       return res.json();
     },
     onSuccess: () => {
+      ability.update([]);
       queryClient.clear();
       queryClient.setQueryData(['session'], { user: null, rules: [] });
     },

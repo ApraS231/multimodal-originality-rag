@@ -21,6 +21,7 @@ import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/toast-provider';
 import CurvedTransition from '../components/ui/curved-transition';
 import { Logo } from '../components/ui/logo';
+import { ability } from '../components/providers';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -169,10 +170,25 @@ export default function Login() {
     },
     onSuccess: async (data) => {
       setLoginError('');
-      queryClient.clear();
-      await queryClient.invalidateQueries({ queryKey: ['session'] });
       
-      const role = data.user?.profil?.peran;
+      // Update rules CASL secara langsung dan sinkron
+      if (data.rules && Array.isArray(data.rules)) {
+        ability.update(data.rules);
+      }
+
+      // Tautkan data sesi langsung ke React Query cache agar Guard tidak mendapati state kosong
+      queryClient.setQueryData(['session'], { user: data.user, rules: data.rules || [] });
+      await queryClient.invalidateQueries({ queryKey: ['session'] });
+
+      // Periksa status persetujuan akun
+      const status = data.user?.profil?.status_persetujuan;
+      if (status === 'PENDING' || status === 'REJECTED') {
+        navigate('/pending-approval');
+        return;
+      }
+
+      // Dapatkan peran wewenang dari profil maupun root user
+      const role = (data.user?.profil?.peran || data.user?.role || '').toUpperCase();
       if (role === 'ADMIN') navigate('/admin/dashboard');
       else if (role === 'ASLAB') navigate('/aslab/dashboard');
       else if (role === 'KEPALA_LAB') navigate('/kepala-lab/dashboard');

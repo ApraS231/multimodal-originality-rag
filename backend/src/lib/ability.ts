@@ -5,11 +5,15 @@ export function defineRulesFor(profil: any) {
 
   if (!profil) return rules;
 
-  if (profil.peran === 'ADMIN') {
+  const peran = (profil.peran || '').toUpperCase();
+
+  if (peran === 'ADMIN') {
     can('manage', 'all');
-    cannot('read', 'AslabPanel');
-    cannot('read', 'KepalaLabPanel');
-  } else if (profil.peran === 'ASLAB') {
+    can('read', 'AdminPanel');
+    can('read', 'AslabPanel');
+    can('read', 'KepalaLabPanel');
+    can('read', 'Laporan');
+  } else if (peran === 'ASLAB') {
     can('read', 'AslabPanel');
     can('read', 'Laporan');
     can('create', 'Laporan');
@@ -20,7 +24,7 @@ export function defineRulesFor(profil: any) {
     can('delete', 'Chatbot');
     cannot('manage', 'AdminPanel');
     cannot('read', 'KepalaLabPanel');
-  } else if (profil.peran === 'KEPALA_LAB') {
+  } else if (peran === 'KEPALA_LAB') {
     can('read', 'KepalaLabPanel');
     can('read', 'Laporan');
     can('read', 'Summary');
@@ -33,5 +37,4 @@ export function defineRulesFor(profil: any) {
     cannot('read', 'AslabPanel');
   }
   return rules;
-
 }

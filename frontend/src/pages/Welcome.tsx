@@ -212,7 +212,7 @@ export default function Welcome() {
 
   const handleActionClick = () => {
     if (session?.user) {
-      const role = session.user.role || session.user.profil?.peran;
+      const role = (session.user.role || session.user.profil?.peran || '').toUpperCase();
       if (role === 'ADMIN') startSwipeAndNavigate('/admin/dashboard');
       else if (role === 'ASLAB') startSwipeAndNavigate('/aslab/dashboard');
       else if (role === 'KEPALA_LAB') startSwipeAndNavigate('/kepala-lab/dashboard');

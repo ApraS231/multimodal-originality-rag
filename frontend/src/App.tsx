@@ -34,12 +34,12 @@ function RootRedirect() {
     return <LoadingSpinner variant="fullpage" message="Menautkan autentikasi..." />;
   }
 
-  const role = data?.user?.profil?.peran;
-  const status = data?.user?.profil?.status_persetujuan;
-
   if (!data?.user) {
     return <Navigate to="/login" replace />;
   }
+
+  const role = (data?.user?.profil?.peran || (data?.user as any)?.role || '').toUpperCase();
+  const status = data?.user?.profil?.status_persetujuan;
 
   if (status === 'PENDING' || status === 'REJECTED') {
     return <Navigate to="/pending-approval" replace />;
@@ -59,7 +59,16 @@ function RootRedirect() {
 }
 
 function ApprovalGuard() {
-  const { data } = useSession();
+  const { data, isLoading } = useSession();
+
+  if (isLoading) {
+    return <LoadingSpinner variant="fullpage" message="Memeriksa status akun..." />;
+  }
+
+  if (!data?.user) {
+    return <Navigate to="/login" replace />;
+  }
+
   const status = data?.user?.profil?.status_persetujuan;
 
   if (status === 'PENDING' || status === 'REJECTED') {
@@ -105,7 +114,7 @@ export default function App() {
         {/* Rute Proteksi yang Butuh Persetujuan */}
         <Route element={<ApprovalGuard />}>
           {/* Rute Proteksi Admin */}
-          <Route element={<ProtectedRoute action="manage" subject="all" />}>
+          <Route element={<ProtectedRoute action="manage" subject="all" allowedRoles={['ADMIN']} />}>
             <Route element={<SidebarLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/prodi" element={<AdminProdi />} />
@@ -124,7 +133,7 @@ export default function App() {
           </Route>
 
           {/* Rute Proteksi Aslab */}
-          <Route element={<ProtectedRoute action="read" subject="AslabPanel" />}>
+          <Route element={<ProtectedRoute action="read" subject="AslabPanel" allowedRoles={['ASLAB', 'ADMIN']} />}>
             <Route element={<SidebarLayout />}>
               <Route path="/aslab/dashboard" element={<AslabDashboard />} />
               <Route path="/aslab/checker" element={<AslabChecker />} />
@@ -134,7 +143,7 @@ export default function App() {
           </Route>
 
           {/* Rute Proteksi Kepala Lab */}
-          <Route element={<ProtectedRoute action="read" subject="KepalaLabPanel" />}>
+          <Route element={<ProtectedRoute action="read" subject="KepalaLabPanel" allowedRoles={['KEPALA_LAB', 'ADMIN']} />}>
             <Route element={<SidebarLayout />}>
               <Route path="/kepala-lab/dashboard" element={<KepalaLabDashboard />} />
               <Route path="/kepala-lab/matrix" element={<KepalaLabMatrix />} />
