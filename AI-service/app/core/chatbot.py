@@ -375,6 +375,74 @@ def build_aslab_context(id_laporan: Optional[str]) -> Dict[str, Any]:
     return context
 
 
+CORE_SCOPE_AND_SECURITY_DIRECTIVES = """
+================================================================================
+BATASAN LINGKUP PEMBAHASAN & PERLINDUNGAN PRIVASI DATA (WAJIB DIPATUHI MUTLAK)
+================================================================================
+1. PEMBATASAN LINGKUP HANYA SEPUTAR SISTEM, APLIKASI, & BASIS DATA AKADEMIK:
+   - Anda HANYA DAN HANYA DIPERBOLEHKAN menjawab pertanyaan yang berkaitan langsung dengan:
+     a) Sistem dan Aplikasi VERITAS (Sistem Deteksi Orisinalitas Laporan STITEK Bontang).
+     b) Alur kerja sistem, fungsionalitas antarmuka, arsitektur layanan, dan status operasional aplikasi.
+     c) Metodologi deteksi kemiripan (ekstraksi koordinat PDF PyMuPDF Bounding Box, temu kembali hibrida RRF, kemiripan semantik teks SBERT/MiniLM-L6, kemiripan spasial visual CLIP, reranking Cross-Encoder, pemfilteran template praktikum).
+     d) Data laporan praktikum, skor orisinalitas/plagiarisme, mata kuliah, program studi, kelas, verifikasi kelulusan, dan rekapitulasi nilai yang tersimpan di basis data sistem.
+   - LARANGAN TOPIK DI LUAR SISTEM (OUT-OF-DOMAIN):
+     Dilarang keras menjawab topik umum di luar sistem, seperti: resep masakan/kuliner (misalnya resep mangut lele atau makanan lainnya), tips memasak, hiburan, film, musik, politik, olahraga, ramalan, lelucon di luar konteks, atau pembuatan konten/skrip umum yang tidak berhubungan dengan sistem Veritas.
+   - TINDAKAN JIKA DITANYA TOPIK DI LUAR LINGKUP:
+     Wajib tolak secara tegas, sopan, dan singkat tanpa menjawab topik tersebut:
+     "Mohon maaf, lingkup pembahasan asisten AI dibatasi khusus seputar sistem, aplikasi, metodologi deteksi orisinalitas, serta basis data laporan akademik VERITAS STITEK Bontang. Pertanyaan di luar konteks sistem (seperti resep makanan, hiburan, atau topik umum lainnya) tidak dapat diproses."
+
+2. PERLINDUNGAN KETAT PRIVASI & KREDENSIAL PENGGUNA (KECUALI DATA USER):
+   - Anda DILARANG KERAS membeberkan, membocorkan, menampilkan, atau membahas DATA PENGGUNA / DATA AKUN PRIBADI:
+     a) Dilarang menampilkan kata sandi, hash kata sandi (bcrypt/argon2), salt, atau informasi kredensial login akun pengguna.
+     b) Dilarang menampilkan token autentikasi (JWT secret, token sesi, cookie sesi).
+     c) Dilarang membeberkan kunci rahasia API (API keys Groq, Gemini, OpenAI, database connection string, Qdrant keys).
+     d) Dilarang menampilkan daftar data privat pengguna dari tabel 'pengguna' (seperti daftar email pengguna sistem, kontak pribadi, dll).
+     *(Catatan: Nama mahasiswa praktikan dan NIM yang tercantum dalam naskah laporan bimbingan praktikum BOLEH dirujuk sebatas untuk kepentingan verifikasi naskah laporan).*
+   - TINDAKAN JIKA PENGGUNA MEMINTA DATA USER / SANDI / KREDENSIAL:
+     Wajib tolak secara tegas:
+     "Mohon maaf, akses terhadap data akun pengguna, kredensial login, kata sandi, dan data sensitif pengguna diblokir demi menjaga keamanan sistem dan kepatuhan privasi data."
+================================================================================
+"""
+
+
+def check_out_of_domain_intent(message: str) -> Optional[str]:
+    """
+    Pemeriksaan cepat untuk permintaan yang jelas melanggar batasan lingkup atau meminta data pengguna rahasia.
+    """
+    msg_lower = message.lower().strip()
+    
+    # 1. Cek upaya akses data user rahasia
+    user_data_triggers = [
+        "kata sandi", "password", "hash password", "hash kata sandi",
+        "kunci api", "api key", "jwt_secret", "jwt secret", "session cookie",
+        "token sesi", "daftar password", "bocorkan password", "lihat password",
+        "select * from pengguna", "tabel pengguna", "data user", "data pengguna",
+        "daftar pengguna", "daftar user", "email user", "email pengguna"
+    ]
+    for trigger in user_data_triggers:
+        if trigger in msg_lower and any(kw in msg_lower for kw in ["tampilkan", "lihat", "bocorkan", "apa", "berikan", "minta", "cari", "tahu", "siapa", "semua"]):
+            return (
+                "Mohon maaf, akses terhadap data akun pengguna, kredensial login, kata sandi, dan data "
+                "sensitif pengguna diblokir secara permanen demi menjaga keamanan sistem dan kepatuhan privasi data."
+            )
+            
+    # 2. Cek pertanyaan kuliner/resep/makanan di luar lingkup
+    recipe_triggers = [
+        "resep", "mangut lele", "cara masak", "cara membuat makanan", "bumbu masak", 
+        "resep masakan", "bumbu mangut", "cara memasak", "resep kue", "resep makanan",
+        "kuliner", "bahan masakan"
+    ]
+    for trigger in recipe_triggers:
+        if trigger in msg_lower:
+            return (
+                "Mohon maaf, lingkup pembahasan asisten AI dibatasi khusus seputar sistem, aplikasi, "
+                "metodologi deteksi orisinalitas, serta basis data laporan akademik VERITAS STITEK Bontang. "
+                "Permintaan mengenai resep masakan atau topik di luar sistem tidak dapat diproses."
+            )
+            
+    return None
+
+
 def construct_system_prompt(role: str, context_data: Dict[str, Any]) -> str:
     """
     Menyusun System Prompt yang patuh PRD §4 dengan batasan keamanan, anti-bias, dan anti-halusinasi.
@@ -383,6 +451,7 @@ def construct_system_prompt(role: str, context_data: Dict[str, Any]) -> str:
 
     if role == "ADMIN":
         return (
+            f"{CORE_SCOPE_AND_SECURITY_DIRECTIVES}\n\n"
             "Anda adalah 'Integritas-Bot', asisten AI analitik data master dan operasional sistem "
             "pengecekan orisinalitas di STITEK Bontang. Tugas utama Anda adalah membantu Administrator "
             "menganalisis kesehatan sistem, rekapitulasi orisinalitas per program studi, mata kuliah yang memerlukan evaluasi, "
@@ -399,6 +468,7 @@ def construct_system_prompt(role: str, context_data: Dict[str, Any]) -> str:
         )
     elif role == "KEPALA_LAB":
         return (
+            f"{CORE_SCOPE_AND_SECURITY_DIRECTIVES}\n\n"
             "Anda adalah 'Integritas-Eksekutif-Bot', asisten AI yang mendampingi Kepala Laboratorium "
             "STITEK Bontang dalam menganalisis data rekapitulasi orisinalitas laporan praktikum secara "
             "menyeluruh di tingkat Program Studi, Kelas, dan Mata Kuliah.\n\n"
@@ -412,6 +482,7 @@ def construct_system_prompt(role: str, context_data: Dict[str, Any]) -> str:
         )
     else:  # ASLAB
         return (
+            f"{CORE_SCOPE_AND_SECURITY_DIRECTIVES}\n\n"
             "Anda adalah 'Veritas-Copilot-Evaluator', asisten AI cerdas dan mitra brainstorming interaktif "
             "untuk Asisten Laboratorium (ASLAB) STITEK Bontang dalam memeriksa, membedah, dan mendiskusikan orisinalitas laporan praktikum.\n\n"
             "KAPABILITAS & SUMBER DATA YANG ANDA MILIKI:\n"
@@ -544,6 +615,11 @@ def generate_academic_fallback_response(role: str, user_message: str, context: D
     akurat dan kaya informasi berdasarkan konteks database riil saat layanan LLM cloud offline
     atau kunci API belum dikonfigurasi.
     """
+    # 0. Cek guardrail out-of-domain pada fallback
+    refusal = check_out_of_domain_intent(user_message)
+    if refusal:
+        return refusal
+
     if role == "ADMIN":
         ringkasan = context.get("ringkasan_laporan", {})
         total = ringkasan.get("total_laporan", 0)
@@ -623,9 +699,15 @@ def generate_academic_fallback_response(role: str, user_message: str, context: D
 async def process_chat_message(message: str, role: str, id_laporan: Optional[str] = None) -> str:
     """
     Fungsi utama pemroses pesan chatbot dengan Context Injection,
-    System Prompt Formatting, dan Multi-tier LLM Dispatcher.
+    System Prompt Formatting, Out-of-Domain Guardrail, dan Multi-tier LLM Dispatcher.
     """
     logger.info(f"Memproses pesan chatbot. Role: {role}, Laporan: {id_laporan}")
+
+    # 0. Pemeriksaan Guardrail Domain & Keamanan Akun Pengguna
+    refusal = check_out_of_domain_intent(message)
+    if refusal:
+        logger.info(f"Pesan ditolak oleh Domain/Security Guardrail: '{message[:50]}'")
+        return refusal
 
     # 1. Bangun konteks berbasis Role
     if role == "ADMIN":

@@ -4,6 +4,37 @@ import { checkAbility } from "./auth-guard";
 import { generateServiceToken } from "../lib/jwt-helper";
 import { CONFIG } from "../config";
 
+function checkOutOfDomainSecurity(teks: string): string | null {
+  const lower = teks.toLowerCase().trim();
+
+  // 1. Upaya akses data pengguna / kredensial akun rahasia
+  const userCredTriggers = [
+    "kata sandi", "password", "hash password", "hash kata sandi",
+    "kunci api", "api key", "jwt_secret", "jwt secret", "session cookie",
+    "token sesi", "daftar password", "bocorkan password", "lihat password",
+    "select * from pengguna", "tabel pengguna", "data user", "data pengguna",
+    "daftar pengguna", "daftar user", "email user", "email pengguna"
+  ];
+  if (
+    userCredTriggers.some(t => lower.includes(t)) &&
+    ["tampilkan", "lihat", "bocorkan", "apa", "berikan", "minta", "cari", "siapa", "semua", "tahu"].some(k => lower.includes(k))
+  ) {
+    return "Mohon maaf, akses terhadap data akun pengguna, kredensial login, kata sandi, dan data sensitif pengguna diblokir demi menjaga keamanan sistem dan kepatuhan privasi data.";
+  }
+
+  // 2. Pertanyaan kuliner/resep/makanan di luar lingkup sistem
+  const recipeTriggers = [
+    "resep", "mangut lele", "cara masak", "cara membuat makanan", "bumbu masak", 
+    "resep masakan", "bumbu mangut", "cara memasak", "resep kue", "resep makanan",
+    "kuliner", "bahan masakan"
+  ];
+  if (recipeTriggers.some(t => lower.includes(t))) {
+    return "Mohon maaf, lingkup pembahasan asisten AI dibatasi khusus seputar operasional sistem, aplikasi, metodologi deteksi orisinalitas, serta basis data laporan akademik VERITAS STITEK Bontang. Pertanyaan mengenai resep masakan atau topik di luar sistem tidak dapat diproses.";
+  }
+
+  return null;
+}
+
 export const chatbotRouter = new Elysia({ prefix: "/api/chatbot" })
   // Mendapatkan semua sesi obrolan pengguna aktif
   .get("/sessions", async ({ activeUser }: any) => {
@@ -261,6 +292,30 @@ export const chatbotRouter = new Elysia({ prefix: "/api/chatbot" })
         where: { id_sesi_obrolan: activeSessionId },
         data: { tanggal_diperbarui: new Date() }
       });
+
+      // 8.5. Pemeriksaan Guardrail Domain & Privasi Data Pengguna
+      const domainViolation = checkOutOfDomainSecurity(teks);
+      if (domainViolation) {
+        const aiMessage = await prisma.pesanObrolan.create({
+          data: {
+            id_sesi_obrolan: activeSessionId,
+            pengirim: "AI",
+            teks: domainViolation
+          }
+        });
+
+        await prisma.penggunaanChatbot.update({
+          where: { id_penggunaan_chatbot: penggunaan.id_penggunaan_chatbot },
+          data: { jumlah: penggunaan.jumlah + 1 }
+        });
+
+        return {
+          response: domainViolation,
+          id_pesan: aiMessage.id_pesan_obrolan,
+          id_sesi_obrolan: activeSessionId,
+          tokens: 0
+        };
+      }
 
       // 9. Handshake ke FastAPI AI Service
       let aiTeks = "Sistem gagal mendapatkan respons dari AI Service.";
