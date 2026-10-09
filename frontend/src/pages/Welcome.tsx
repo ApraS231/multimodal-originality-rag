@@ -104,9 +104,8 @@ export default function Welcome() {
             className="flex items-center gap-2.5 cursor-pointer group"
           >
             <Logo size={24} variant="transparent" />
-            <div className="flex items-center gap-1">
+            <div className="flex items-center">
               <span className="font-bold text-xs tracking-wider text-[#F7F3E9] group-hover:text-white transition-colors">VERITAS</span>
-              <span className="text-[#D4AF37] text-xs font-mono font-bold">*</span>
             </div>
           </div>
 
@@ -224,11 +223,10 @@ export default function Welcome() {
           {/* Hero Main Block (Asimetris: Kiri Title Raksasa, Kanan Deskripsi & CTA) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end my-auto py-8">
             
-            {/* Sisi Kiri: Judul Raksasa "VERITAS*" */}
+            {/* Sisi Kiri: Judul Raksasa "VERITAS" */}
             <div className="lg:col-span-8 select-none">
-              <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10.5rem] xl:text-[12rem] font-black font-brutalism tracking-tighter text-[#F7F3E9] leading-none flex items-baseline">
-                <span>Veritas</span>
-                <span className="text-[#D4AF37] font-mono ml-1 sm:ml-2 text-[0.6em] leading-none">*</span>
+              <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10.5rem] xl:text-[12rem] font-black font-brutalism tracking-tighter text-[#F7F3E9] leading-none">
+                Veritas
               </h1>
             </div>
 
@@ -246,7 +244,7 @@ export default function Welcome() {
               >
                 <span>{session?.user ? 'Buka Panel Dasbor' : 'Eksplorasi Naskah'}</span>
                 <span className="w-6 h-6 rounded-full bg-[#0D1B2A] text-white flex items-center justify-center text-xs group-hover:translate-x-0.5 transition-transform">
-                  →
+                  <ArrowRight className="w-3.5 h-3.5 text-white" />
                 </span>
               </button>
             </div>
@@ -254,14 +252,14 @@ export default function Welcome() {
 
           {/* Bawah Hero: Indikator Scroll & Meta Label */}
           <div className="flex items-center justify-between border-t border-[#415A77]/25 pt-6 text-[11px] font-mono text-slate-400">
-            <span>MULTIMODAL RAG • QDRANT VECTOR • ELYSIAJS</span>
+            <span>MULTIMODAL RAG • POSTGRESQL EMBEDDING • ELYSIAJS</span>
             <button
               type="button"
               onClick={() => scrollToSection('about-section')}
               className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <span>Scroll ke bawah</span>
-              <span>↓</span>
+              <ChevronDown className="w-3.5 h-3.5" />
             </button>
           </div>
         </section>
@@ -284,7 +282,7 @@ export default function Welcome() {
             <span className="font-editorial-italic font-normal text-[#D4AF37] text-[1.12em] tracking-normal">
               ditempa dari presisi penalaran AI.
             </span>{' '}
-            Kami memetakan kesamaan teks, grafik, dan struktur dokumen menjadi skor objektif yang dapat dipertanggungjawabkan.
+            Sistem memetakan kesamaan teks, grafik, dan struktur dokumen menjadi skor objektif yang dapat dipertanggungjawabkan.
           </h2>
 
           {/* Sub-paragraf Keterangan Halus */}
@@ -446,7 +444,7 @@ export default function Welcome() {
                   <ul className="space-y-2 text-xs text-slate-300">
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
-                      <span>Dense Vector Search via Qdrant</span>
+                      <span>Dense Vector Cosine Similarity</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
@@ -454,7 +452,7 @@ export default function Welcome() {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
-                      <span>Reciprocal Rank Fusion (k = 60)</span>
+                      <span>Reciprocal Rank Fusion ($k = 60$)</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
@@ -504,7 +502,7 @@ export default function Welcome() {
             >
               <span>{session?.user ? 'Buka Panel Dasbor' : 'Mulai Pemeriksaan'}</span>
               <span className="w-6 h-6 rounded-full bg-[#0D1B2A] text-white flex items-center justify-center text-xs group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
-                ↗
+                <ArrowUpRight className="w-3.5 h-3.5 text-white" />
               </span>
             </button>
           </div>
@@ -534,7 +532,7 @@ export default function Welcome() {
                   TEKNOLOGI
                 </span>
                 <ul className="space-y-2 text-slate-400">
-                  <li>Qdrant Vector Database Engine</li>
+                  <li>PostgreSQL Vector & Full-Text Engine</li>
                   <li>FastAPI Python Multimodal Agent</li>
                   <li>Bun & ElysiaJS High-Performance Gateway</li>
                   <li>PyMuPDF Spatial Coordinate Extraction</li>
