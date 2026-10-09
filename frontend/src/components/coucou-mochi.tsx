@@ -9,10 +9,11 @@ export interface CoucouMochiProps {
   label?: string;
   interactive?: boolean;
   status?: MochiStatus;
+  hasWings?: boolean;
 }
 
 interface Particle {
-  type: 'heart' | 'star' | 'spark';
+  type: 'heart' | 'star' | 'spark' | 'feather';
   x: number;
   y: number;
   vx: number;
@@ -32,6 +33,7 @@ export function CoucouMochi({
   label = 'Mochi Companion AI',
   interactive = true,
   status = 'idle',
+  hasWings = false,
 }: CoucouMochiProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -243,6 +245,71 @@ export function CoucouMochi({
       ctx.translate(cx, cy);
       if (s.tilt) ctx.rotate(s.tilt);
       ctx.scale(s.scaleX, s.scaleY);
+
+      // Sayap Mochi Bersayap (Angelic Fluttering Wings)
+      if (hasWings) {
+        const flapSpeed = s.isSquashing ? 26 : (s.emote !== 'idle' ? 20 : (s.isHovered ? 14 : 7));
+        const flapAmp = s.isHovered ? 0.36 : 0.22;
+        const flapCycle = Math.sin(t * flapSpeed);
+        const flapAngle = flapCycle * flapAmp;
+        const flapZ = 0.82 + Math.cos(t * flapSpeed) * 0.22;
+
+        for (const sd of [-1, 1]) {
+          ctx.save();
+          // Pangkal sayap di bagian belakang atas mochi
+          const rootX = sd * rx * 0.52;
+          const rootY = -ry * 0.12;
+          ctx.translate(rootX, rootY);
+          ctx.scale(sd, 1); // Cerminkan horizontal untuk sayap kanan
+
+          // Rotasi dan perspektif kepakan sayap
+          ctx.rotate(-0.28 + flapAngle);
+          ctx.scale(flapZ, 1);
+
+          // Geometri Sayap Berbulu Halus (3 Lekukan Bulu Anggun)
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          // Bulu utama teratas (melengkung ke atas dan ke luar)
+          ctx.bezierCurveTo(R * 0.25, -R * 0.65, R * 0.8, -R * 0.92, R * 1.32, -R * 0.52);
+          // Lekukan antara bulu pertama dan kedua
+          ctx.bezierCurveTo(R * 1.1, -R * 0.32, R * 1.2, -R * 0.12, R * 1.05, 0.1);
+          // Lekukan antara bulu kedua dan ketiga
+          ctx.bezierCurveTo(R * 0.85, 0.22, R * 0.9, 0.38, R * 0.68, 0.48);
+          // Bulu bawah melengkung kembali ke pangkal sayap
+          ctx.bezierCurveTo(R * 0.38, 0.44, R * 0.15, 0.26, 0, 0);
+          ctx.closePath();
+
+          // Gradien Lembut Mutiara Putih dengan Sentuhan Emas Elegan
+          const wg = ctx.createLinearGradient(0, -R * 0.6, R * 1.3, R * 0.3);
+          wg.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
+          wg.addColorStop(0.5, 'rgba(248, 250, 255, 0.92)');
+          wg.addColorStop(1, 'rgba(232, 240, 255, 0.85)');
+          ctx.fillStyle = wg;
+
+          // Bayangan halo halus keemasan
+          ctx.shadowColor = 'rgba(212, 175, 55, 0.28)';
+          ctx.shadowBlur = 8;
+          ctx.fill();
+
+          // Garis tepi sayap presisi beraksen emas STITEK
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(212, 175, 55, 0.42)';
+          ctx.lineWidth = 1.3;
+          ctx.stroke();
+
+          // Aksen ruas helai bulu di bagian dalam sayap
+          ctx.beginPath();
+          ctx.moveTo(R * 0.22, -R * 0.1);
+          ctx.bezierCurveTo(R * 0.52, -R * 0.38, R * 0.82, -R * 0.42, R * 0.98, -R * 0.34);
+          ctx.moveTo(R * 0.24, 0.05);
+          ctx.bezierCurveTo(R * 0.48, 0.03, R * 0.72, 0.06, R * 0.82, 0.14);
+          ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.restore();
+        }
+      }
 
       // Superellipsoid path (exponent 2.7)
       const pathPoints: [number, number][] = [];
@@ -519,6 +586,23 @@ export function CoucouMochi({
           }
           ctx.closePath();
           ctx.fill();
+        } else if (p.type === 'feather') {
+          // Helai bulu putih keemasan melayang anggun
+          ctx.save();
+          ctx.rotate(p.rot);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+          ctx.lineWidth = 0.9;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.size * 0.42, p.size * 1.05, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          // Garis tengah poros bulu
+          ctx.beginPath();
+          ctx.moveTo(0, -p.size * 0.85);
+          ctx.lineTo(0, p.size * 0.95);
+          ctx.stroke();
+          ctx.restore();
         }
         ctx.restore();
       }
@@ -532,7 +616,7 @@ export function CoucouMochi({
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [size]);
+  }, [size, hasWings]);
 
   // Click "Boop" interaction:
   // Shows emote + particles -> guaranteed to smoothly transition back to normal idle after 1.2s!
@@ -587,10 +671,25 @@ export function CoucouMochi({
       });
     }
 
+    // Jika Mochi memiliki sayap, lepaskan helai bulu lembut saat disentuh
+    if (hasWings) {
+      s.particles.push({
+        type: 'feather',
+        x: (Math.random() - 0.5) * 32,
+        y: -size * 0.2,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -0.65 - Math.random() * 0.3,
+        age: 0,
+        life: 0.95,
+        rot: Math.random() * Math.PI,
+        size: 7.5,
+      });
+    }
+
     if (onClick) {
       onClick();
     }
-  }, [onClick, size]);
+  }, [onClick, size, hasWings]);
 
   return (
     <div

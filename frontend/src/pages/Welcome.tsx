@@ -18,6 +18,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import CurvedTransition from '../components/ui/curved-transition';
 import { Logo } from '../components/ui/logo';
+import { WingedMochiLanding } from '../components/winged-mochi-landing';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -744,6 +745,9 @@ export default function Welcome() {
         </section>
 
       </main>
+
+      {/* Maskot Mochi Bersayap Interaktif (Landing Page Companion) */}
+      <WingedMochiLanding />
 
       {/* Curved Box Wipe Transition Overlay (Welcome -> Login) */}
       {isSwiping && (
