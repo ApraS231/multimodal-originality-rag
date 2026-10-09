@@ -62,6 +62,8 @@ const BUBBLE_PROMPTS_REPORT = [
 
 const getInitialMochiPosition = (): MochiPosition => {
   if (typeof window === 'undefined') return { x: 0, y: 0, edge: 'right' };
+  const isMobile = window.innerWidth < 1024;
+  const bottomOffset = isMobile ? 80 : 24;
   try {
     const saved = localStorage.getItem(MOCHI_STORAGE_KEY);
     if (saved) {
@@ -69,8 +71,8 @@ const getInitialMochiPosition = (): MochiPosition => {
       const isLeft = parsed.edge === 'left';
       const snapX = isLeft ? 16 : Math.max(16, window.innerWidth - MOCHI_SIZE - 16);
       const targetY = typeof parsed.yRatio === 'number' 
-        ? Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - 20, parsed.yRatio * window.innerHeight))
-        : Math.max(70, window.innerHeight - MOCHI_SIZE - 24);
+        ? Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - bottomOffset, parsed.yRatio * window.innerHeight))
+        : Math.max(70, window.innerHeight - MOCHI_SIZE - bottomOffset);
       return { x: snapX, y: targetY, edge: isLeft ? 'left' : 'right' };
     }
   } catch {
@@ -78,7 +80,7 @@ const getInitialMochiPosition = (): MochiPosition => {
   }
   return {
     x: Math.max(16, window.innerWidth - MOCHI_SIZE - 16),
-    y: Math.max(70, window.innerHeight - MOCHI_SIZE - 24),
+    y: Math.max(70, window.innerHeight - MOCHI_SIZE - bottomOffset),
     edge: 'right'
   };
 };
@@ -202,7 +204,9 @@ export default function Chatbot({
       const centerX = mochiPos.x + MOCHI_SIZE / 2;
       const isLeft = centerX < window.innerWidth / 2;
       const targetX = isLeft ? 16 : Math.max(16, window.innerWidth - MOCHI_SIZE - 16);
-      const targetY = Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - 20, mochiPos.y));
+      const isMobile = window.innerWidth < 1024;
+      const bottomSnapMargin = isMobile ? 75 : 20;
+      const targetY = Math.max(70, Math.min(window.innerHeight - MOCHI_SIZE - bottomSnapMargin, mochiPos.y));
 
       const finalPos: MochiPosition = {
         x: targetX,

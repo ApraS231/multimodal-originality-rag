@@ -51,7 +51,7 @@ export default function AslabDashboard() {
     : '0.0';
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-[#0D1B2A] animate-fade-in font-sans">
+    <div className="p-3.5 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 text-[#0D1B2A] animate-fade-in font-sans">
       {/* Header */}
       <PageHeader 
         title="Direktori"
@@ -62,7 +62,7 @@ export default function AslabDashboard() {
             onClick={() => navigate('/aslab/checker')}
             variant="default"
             size="sm"
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <span>Pengecekan Dokumen</span>
             <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
@@ -70,8 +70,8 @@ export default function AslabDashboard() {
         }
       />
 
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Summary Cards (2x2 di ponsel, 4 kolom di desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Card 1: Total Naskah */}
         <StatCard
           title="Total Berkas Bimbingan"

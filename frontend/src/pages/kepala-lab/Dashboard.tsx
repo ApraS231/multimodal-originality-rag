@@ -76,8 +76,8 @@ export default function KepalaLabDashboard() {
         description="Pantau tingkat orisinalitas naskah praktikan, sebaran plagiarisme, dan performa asisten di seluruh program studi."
       />
 
-      {/* Grid 1: Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Grid 1: Stat Cards (2x2 di ponsel, 4 kolom di layar besar) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Card 1: Total Laporan */}
         <StatCard
           title="Total Laporan"

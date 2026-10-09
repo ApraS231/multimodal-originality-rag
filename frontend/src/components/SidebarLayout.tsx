@@ -1,4 +1,5 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Chatbot from './chatbot';
 import { useSession, useLogout } from '../api/auth';
@@ -18,24 +19,52 @@ import {
   UserCheck, 
   LogOut, 
   GraduationCap, 
-  FolderArchive 
+  FolderArchive,
+  Menu,
+  X
 } from 'lucide-react';
 
-// Side Tab Khusus Tampilan Layar Mobile (Ramping, Terintegrasi, Bebas dari Drawer / Modal Popup)
-function MobileSideTab({ role, userName }: { role: string; userName: string }) {
+export default function SidebarLayout() {
+  const { data: session } = useSession();
+  const location = useLocation();
   const navigate = useNavigate();
   const logoutMutation = useLogout();
+  
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const role = session?.user?.profil?.peran || 'ASLAB';
+  const userName = session?.user?.nama || 'Pengguna';
   const initial = (userName || 'P').charAt(0).toUpperCase();
+
+  // Menutup drawer saat rute berpindah atau tombol Escape ditekan
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsDrawerOpen(false);
+    };
+    if (isDrawerOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isDrawerOpen]);
 
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
     } catch {
-      // Ignored
+      // Diabaikan
     }
     navigate('/login');
   };
 
+  // Navigasi lengkap untuk Slide-Over Drawer
   const getNavItems = () => {
     switch (role) {
       case 'ADMIN':
@@ -68,102 +97,228 @@ function MobileSideTab({ role, userName }: { role: string; userName: string }) {
     }
   };
 
+  // Tab utama untuk Bottom Navigation Bar (Fokus thumb-reach pada layar ponsel)
+  const getBottomNavItems = () => {
+    switch (role) {
+      case 'ASLAB':
+        return [
+          { name: 'Direktori', path: '/aslab/dashboard', icon: LayoutDashboard },
+          { name: 'Pengecekan', path: '/aslab/checker', icon: FileCheck },
+          { name: 'Profil', path: '/aslab/profile', icon: UserCheck },
+        ];
+      case 'KEPALA_LAB':
+        return [
+          { name: 'Rekapitulasi', path: '/kepala-lab/dashboard', icon: BarChart },
+          { name: 'Matriks', path: '/kepala-lab/matrix', icon: LayoutDashboard },
+        ];
+      case 'ADMIN':
+        return [
+          { name: 'Dasbor', path: '/admin/dashboard', icon: LayoutDashboard },
+          { name: 'Direktori', path: '/admin/repository', icon: FolderArchive },
+          { name: 'Antrean', path: '/admin/queue-monitor', icon: Activity },
+        ];
+      default:
+        return [];
+    }
+  };
+
   const navItems = getNavItems();
+  const bottomNavItems = getBottomNavItems();
 
   return (
-    <aside 
-      className="w-13 sm:w-14 bg-white dark:bg-[#152238] border-r border-[#415A77]/20 flex flex-col h-screen flex-shrink-0 relative z-20 font-sans select-none"
-      aria-label="Side Tab Mobile Veritas"
-    >
-      {/* Brand Icon Mini */}
-      <div className="h-13 px-2 border-b border-[#415A77]/20 flex items-center justify-center shrink-0">
-        <Logo size={28} />
+    <div className="relative h-screen w-full overflow-hidden bg-[#F7F3E9] flex font-sans text-[#0D1B2A]">
+      {/* 1. DESKTOP SIDEBAR (Tampil utuh pada breakpoint lg ke atas) */}
+      <div className="hidden lg:flex h-full">
+        <Sidebar />
       </div>
 
-      {/* Rel Ikon Navigasi Lengkap (Dapat di-scroll vertikal halus tanpa scrollbar kasar) */}
+      {/* 2. AREA UTAMA (100% Lebar penuh pada layar ponsel, tidak terhimpit side strip) */}
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden w-full">
+        {/* 2.1 HEADER APLIKASI MOBILE (Ramping, Terpadu & Bernilai Ergonomis Tinggi) */}
+        <header className="h-13 bg-white/95 dark:bg-[#152238]/95 backdrop-blur-md border-b border-[#415A77]/15 px-3 sm:px-4 flex items-center justify-between z-20 lg:hidden select-none shrink-0 sticky top-0 shadow-2xs">
+          {/* Sisi Kiri: Tombol Pemicu Menu Drawer & Identitas Kampus */}
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-[#0D1B2A] dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+              aria-label="Buka Menu Navigasi"
+              title="Buka Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Logo size={24} />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-[#0D1B2A] dark:text-[#F7F3E9] tracking-wider uppercase leading-none">VERITAS</span>
+                <span className="text-[9px] text-[#415A77] dark:text-[#A4B3C6] font-mono leading-none mt-0.5">STITEK BONTANG</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sisi Kanan: Lencana Peran & Avatar Pengguna */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#415A77]/10 text-[#0D1B2A] dark:bg-[#D4AF37]/15 dark:text-[#D4AF37] border border-[#415A77]/20">
+              {role === 'ADMIN' ? 'ADMIN' : role === 'KEPALA_LAB' ? 'KEPALA LAB' : 'ASLAB'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="w-8 h-8 rounded-full bg-[#0D1B2A] text-white dark:bg-[#D4AF37] dark:text-[#0D1B2A] font-bold text-xs flex items-center justify-center shadow-2xs hover:ring-2 hover:ring-[#D4AF37] transition-all cursor-pointer"
+              title={`Menu Pengguna (${userName})`}
+              aria-label={`Menu Pengguna ${userName}`}
+            >
+              {initial}
+            </button>
+          </div>
+        </header>
+
+        {/* 2.2 KONTEN UTAMA HALAMAN (Diberi bantalan bawah pb-22 agar tidak tertutup Bottom Bar) */}
+        <main className="flex-1 h-full overflow-y-auto relative pb-22 lg:pb-6 custom-scrollbar">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* 3. BOTTOM NAVIGATION BAR UNTUK MOBILE (Akses Jempol Cepat & Ergonomis) */}
       <nav 
-        className="flex-1 overflow-y-auto px-1.5 py-2.5 flex flex-col items-center gap-1.5 [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-[#152238]/95 backdrop-blur-md border-t border-[#415A77]/15 dark:border-white/10 px-2 py-1 flex items-center justify-around shadow-lg lg:hidden select-none"
+        aria-label="Navigasi Utama Ponsel"
       >
-        {navItems.map((item) => {
+        {bottomNavItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              title={item.name}
               className={({ isActive }) =>
-                `w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                `flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all rounded-lg active:scale-95 cursor-pointer ${
                   isActive
-                    ? 'bg-[#0D1B2A] text-white shadow-xs font-bold scale-102'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-[#A4B3C6]'
+                    ? 'text-[#0D1B2A] dark:text-[#D4AF37] font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
                 }`
               }
             >
-              <Icon className="w-4.5 h-4.5" />
+              {({ isActive }) => (
+                <>
+                  <div className={`p-1 rounded-md transition-colors ${isActive ? 'bg-[#0D1B2A]/10 dark:bg-[#D4AF37]/20 text-[#0D1B2A] dark:text-[#D4AF37]' : ''}`}>
+                    <Icon className="w-4.5 h-4.5" />
+                  </div>
+                  <span className="text-[10px] tracking-tight truncate mt-0.5">{item.name}</span>
+                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] -mb-1 mt-0.5" />}
+                </>
+              )}
             </NavLink>
           );
         })}
-      </nav>
 
-      {/* Profil Singkat & Tombol Keluar */}
-      <div className="p-1.5 border-t border-[#415A77]/20 bg-[#F7F3E9]/50 dark:bg-[#152238] flex flex-col items-center gap-1.5 shrink-0">
-        <div 
-          className="w-8 h-8 rounded-lg bg-[#415A77]/15 text-[#0D1B2A] dark:bg-[#D4AF37]/20 dark:text-[#D4AF37] flex items-center justify-center font-bold text-xs shadow-2xs" 
-          title={userName}
-        >
-          {initial}
-        </div>
+        {/* Tombol Pemicu Drawer Menu Lengkap */}
         <button
           type="button"
-          onClick={handleLogout}
-          title="Keluar"
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+          onClick={() => setIsDrawerOpen(true)}
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all rounded-lg active:scale-95 cursor-pointer ${
+            isDrawerOpen
+              ? 'text-[#0D1B2A] dark:text-[#D4AF37] font-bold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
+          }`}
+          aria-label="Menu Lengkap"
         >
-          <LogOut className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-export default function SidebarLayout() {
-  const { data: session } = useSession();
-  const role = session?.user?.profil?.peran || 'ASLAB';
-  const userName = session?.user?.nama || 'Pengguna';
-
-  return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#F7F3E9] flex font-sans text-[#0D1B2A]">
-      {/* 1. Desktop Sidebar (Utuh seperti semula, w-64 atau w-16 saat diciutkan) */}
-      <div className="hidden lg:flex h-full">
-        <Sidebar />
-      </div>
-
-      {/* 2. Mobile Side Tab (Khusus mobile, w-13/w-14 ramping berdampingan dengan konten) */}
-      <div className="flex lg:hidden h-full">
-        <MobileSideTab role={role} userName={userName} />
-      </div>
-
-      {/* 3. Kolom Konten Sebelah Kanan (Berdampingan bersih, tidak ada tabrakan visual) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        {/* Mobile Header Bar Ringkas (Penanda Sistem & Role Badge) */}
-        <header className="h-13 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3.5 flex items-center justify-between z-10 lg:hidden select-none shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-[#0D1B2A] tracking-wider uppercase">Veritas</span>
-            <span className="text-[10px] text-slate-400 font-mono">STITEK</span>
+          <div className={`p-1 rounded-md transition-colors ${isDrawerOpen ? 'bg-[#0D1B2A]/10 dark:bg-[#D4AF37]/20' : ''}`}>
+            <Menu className="w-4.5 h-4.5" />
           </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-            {role === 'ADMIN' ? 'ADMIN' : role === 'KEPALA_LAB' ? 'KEPALA LAB' : 'ASLAB'}
-          </span>
-        </header>
+          <span className="text-[10px] tracking-tight truncate mt-0.5">Menu</span>
+        </button>
+      </nav>
 
-        {/* Konten Halaman */}
-        <main className="flex-1 h-full overflow-y-auto relative">
-          <Outlet />
-        </main>
-      </div>
+      {/* 4. SLIDE-OVER NAVIGATION DRAWER (Daftar Menu Komprehensif Beranimasi Mulus) */}
+      {isDrawerOpen && (
+        <div 
+          className="fixed inset-0 z-50 lg:hidden bg-black/45 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+          onClick={() => setIsDrawerOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Panel Navigasi Samping"
+        >
+          <div 
+            className="fixed inset-y-0 left-0 w-[285px] max-w-[85vw] bg-white dark:bg-[#152238] shadow-2xl flex flex-col border-r border-[#415A77]/20 animate-in slide-in-from-left duration-250 select-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Drawer */}
+            <div className="h-14 px-4 border-b border-[#415A77]/15 flex items-center justify-between shrink-0 bg-[#F7F3E9]/50 dark:bg-[#0D1B2A]/50">
+              <div className="flex items-center gap-2">
+                <Logo size={26} />
+                <div>
+                  <span className="text-xs font-bold text-[#0D1B2A] dark:text-[#F7F3E9] tracking-wider uppercase block">VERITAS</span>
+                  <span className="text-[9.5px] text-[#415A77] dark:text-[#A4B3C6] font-mono block">Deteksi Orisinalitas</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                aria-label="Tutup Menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-      {/* Floating Mascot Chatbot (Draggable bebas ke mana saja + stick to edge) */}
+            {/* Kartu Profil Pengguna */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#152238]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0D1B2A] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0 border border-slate-700/80">
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-[#0D1B2A] dark:text-white truncate">{userName}</p>
+                  <span className="inline-block mt-0.5 text-[9.5px] font-mono px-2 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">
+                    {role}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Daftar Navigasi Lengkap */}
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+              <p className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2.5 pb-1 font-mono">
+                Navigasi Menu
+              </p>
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsDrawerOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                        isActive
+                          ? 'bg-[#0D1B2A] text-white shadow-xs font-semibold'
+                          : 'text-slate-600 dark:text-[#A4B3C6] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+
+            {/* Footer Drawer dengan Aksi Keluar */}
+            <div className="p-3 border-t border-[#415A77]/15 bg-[#F7F3E9]/40 dark:bg-[#0D1B2A]/40 shrink-0">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Keluar dari Sistem</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Maskot Mochi Veritas AI (Draggable bebas dengan posisi default aman) */}
       <Chatbot />
     </div>
   );
