@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const getBackendUrl = () => import.meta.env.VITE_API_BACKEND_URL || '';
+const getBackendUrl = () => (import.meta.env.VITE_API_BACKEND_URL || '').replace(/\/api\/?$/, '');
 
 // ==========================================
 // Tipe Antarmuka (Interfaces)

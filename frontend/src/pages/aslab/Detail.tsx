@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getBackendUrl } from '../../api/auth';
 import PdfViewer from '../../components/pdf-viewer';
 import Chatbot from '../../components/chatbot';
 import { Label } from '../../components/ui/label';
@@ -107,7 +108,7 @@ export default function Detail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const backendUrl = import.meta.env.VITE_API_BACKEND_URL || '';
+  const backendUrl = getBackendUrl();
 
   const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null);
   const [activeRightTab, setActiveRightTab] = useState<'info' | 'text' | 'images' | 'verification'>('info');

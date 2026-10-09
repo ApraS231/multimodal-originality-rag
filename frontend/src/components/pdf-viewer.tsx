@@ -6,7 +6,8 @@ import {
   ZoomOut, 
   X, 
   Info,
-  Maximize2
+  Maximize2,
+  ExternalLink
 } from 'lucide-react';
 
 export interface BoundingBox {
@@ -383,6 +384,20 @@ export default function PdfViewer({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Notice: Peramban Android/iOS tidak merender PDF di dalam iframe */}
+      <div className="md:hidden px-3.5 py-2 bg-amber-50/90 border-b border-amber-200/80 flex items-center justify-between text-xs text-amber-900 shrink-0">
+        <span className="truncate pr-2">Buka dokumen penuh di aplikasi PDF ponsel:</span>
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline shrink-0 inline-flex items-center gap-1 text-amber-950 hover:text-amber-800"
+        >
+          <span>Buka PDF</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
 
       {/* 3. PDF Viewport Canvas (Soft Neutral Backdrop & Pristine White Sheet) */}
