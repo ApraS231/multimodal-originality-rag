@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
   Folder, 
@@ -294,6 +295,17 @@ export default function AcademicFileManager({
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderType, setNewFolderType] = useState<'prodi' | 'matkul' | 'kelas'>('prodi');
+  const newFolderInputRef = useRef<HTMLInputElement>(null);
+
+  // Fokus input modal tanpa memicu pergeseran gulir (scroll jump / gap) pada container utama
+  useEffect(() => {
+    if (isNewFolderModalOpen) {
+      const timer = setTimeout(() => {
+        newFolderInputRef.current?.focus({ preventScroll: true });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewFolderModalOpen]);
 
   // Inline Rename (Hanya Admin)
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -1307,12 +1319,15 @@ export default function AcademicFileManager({
         </div>
       )}
 
-      {/* 3. MODAL TAMBAH FOLDER BARU (ADMIN ONLY) */}
-      {isAdmin && isNewFolderModalOpen && (
+      {/* 3. MODAL TAMBAH FOLDER BARU (ADMIN ONLY, PORTALED KE DOCUMENT.BODY) */}
+      {isAdmin && isNewFolderModalOpen && typeof document !== 'undefined' && createPortal(
         <div 
           className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
           role="dialog"
           aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsNewFolderModalOpen(false);
+          }}
         >
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
@@ -1323,7 +1338,7 @@ export default function AcademicFileManager({
               <button
                 type="button"
                 onClick={() => setIsNewFolderModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-0.5"
+                className="text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1346,11 +1361,11 @@ export default function AcademicFileManager({
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold text-slate-600 block">Nama Folder</label>
                 <Input
+                  ref={newFolderInputRef}
                   type="text"
                   placeholder="Nama folder..."
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
-                  autoFocus
                   required
                   className="h-8 text-xs"
                 />
@@ -1377,7 +1392,8 @@ export default function AcademicFileManager({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

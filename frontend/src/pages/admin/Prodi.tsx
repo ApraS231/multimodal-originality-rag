@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useProdi, useCreateProdi, useUpdateProdi, useDeleteProdi } from '../../api/admin';
 import type { ProgramStudi } from '../../api/admin';
 import { Can } from '../../components/providers';
@@ -46,6 +47,16 @@ export default function Prodi() {
   // Form Fields
   const [inputNama, setInputNama] = useState('');
   const [valError, setValError] = useState('');
+  const inputNamaRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      const timer = setTimeout(() => {
+        inputNamaRef.current?.focus({ preventScroll: true });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isDialogOpen]);
 
   // Sinkronisasi status drawer dengan maskot
   useEffect(() => {
@@ -436,9 +447,14 @@ export default function Prodi() {
         </div>
       )}
 
-      {/* 6. Form Modal Dialog (Tambah / Sunting) */}
-      {isDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+      {/* 6. Form Modal Dialog (Tambah / Sunting - Portaled) */}
+      {isDialogOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsDialogOpen(false);
+          }}
+        >
           <div className="w-full max-w-md bg-white border border-slate-200 relative z-10 shadow-lg rounded-lg overflow-hidden animate-scale-in flex flex-col">
             
             {/* Header Modal */}
@@ -475,6 +491,7 @@ export default function Prodi() {
                     Nama Program Studi <span className="text-rose-600">*</span>
                   </Label>
                   <Input
+                    ref={inputNamaRef}
                     id="nama_prodi"
                     type="text"
                     placeholder="Contoh: Teknik Informatika"
@@ -482,7 +499,6 @@ export default function Prodi() {
                     onChange={(e) => setInputNama(e.target.value)}
                     className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-xs h-9 rounded-md focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2"
                     required
-                    autoFocus
                   />
                   <p className="text-[11px] text-slate-500">
                     Gunakan nama resmi program studi akademik STITEK Bontang.
@@ -519,7 +535,8 @@ export default function Prodi() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
