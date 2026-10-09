@@ -92,6 +92,7 @@ export const useCreateProdi = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prodi'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -116,6 +117,7 @@ export const useUpdateProdi = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prodi'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -136,6 +138,7 @@ export const useDeleteProdi = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prodi'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -174,6 +177,7 @@ export const useCreateKelas = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kelas'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -210,6 +214,7 @@ export const useUpdateKelas = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kelas'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -230,6 +235,7 @@ export const useDeleteKelas = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kelas'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -268,6 +274,7 @@ export const useCreateMatkul = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matkul'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -292,6 +299,7 @@ export const useUpdateMatkul = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matkul'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -312,6 +320,7 @@ export const useDeleteMatkul = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['matkul'] });
+      queryClient.invalidateQueries({ queryKey: ['aslabNav'] });
     },
   });
 };
@@ -464,5 +473,52 @@ export const useUpdateUserAssignments = () => {
     },
   });
 };
+
+// ==========================================
+// Personalisasi Pengguna: File Manager Preferences
+// ==========================================
+export interface FileManagerConfig {
+  folderColors: Record<string, string>;
+  lockedFolders: Record<string, boolean>;
+}
+
+export const useFileManagerConfig = () => {
+  return useQuery<FileManagerConfig>({
+    queryKey: ['fileManagerConfig'],
+    queryFn: async () => {
+      const res = await fetch(`${getBackendUrl()}/api/auth/preferences/filemanager`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error('Gagal mengambil preferensi file manager');
+      }
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 menit
+  });
+};
+
+export const useUpdateFileManagerConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { folderColors?: Record<string, string>; lockedFolders?: Record<string, boolean> }) => {
+      const res = await fetch(`${getBackendUrl()}/api/auth/preferences/filemanager`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Gagal menyimpan preferensi file manager');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fileManagerConfig'] });
+    },
+  });
+};
+
 
 

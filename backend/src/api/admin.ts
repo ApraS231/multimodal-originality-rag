@@ -342,7 +342,7 @@ export const adminRouter = new Elysia({ prefix: "/api/admin" })
   .get(
     "/config",
     async () => {
-      const config = (await prisma.konfigurasiSistem.findFirst()) || (await initializeDefaultConfig());
+      const config = (await prisma.konfigurasiSistem.findFirst({ where: { id_konfigurasi: "global" } })) || (await initializeDefaultConfig());
       return {
         ...config,
         kunci_api_gemini: config.kunci_api_gemini ? "AIzaSy••••" : null,

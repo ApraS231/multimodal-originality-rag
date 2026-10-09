@@ -352,5 +352,79 @@ export const authRouter = new Elysia({ prefix: "/api/auth" })
     });
 
     return { success: true };
-  });
+  })
+
+  // Personalisasi Tampilan File Manager per Pengguna (Warna & Proteksi Kunci Lokal Akun)
+  .get("/preferences/filemanager", async ({ headers, set }: any) => {
+    const sessionData = await validateSessionAndGetAbility(headers.cookie || "");
+    if (!sessionData.user) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    const config = await prisma.konfigurasiSistem.findUnique({
+      where: { id_konfigurasi: `user_pref_${sessionData.user.id}` }
+    });
+
+    if (!config || !config.kunci_kustom) {
+      return {
+        folderColors: {},
+        lockedFolders: {}
+      };
+    }
+
+    const customData = config.kunci_kustom as any;
+    return {
+      folderColors: customData.folderColors || {},
+      lockedFolders: customData.lockedFolders || {}
+    };
+  })
+  .put(
+    "/preferences/filemanager",
+    async ({ headers, body, set }: any) => {
+      const sessionData = await validateSessionAndGetAbility(headers.cookie || "");
+      if (!sessionData.user) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+
+      const folderColors = body.folderColors || {};
+      const lockedFolders = body.lockedFolders || {};
+
+      const updated = await prisma.konfigurasiSistem.upsert({
+        where: { id_konfigurasi: `user_pref_${sessionData.user.id}` },
+        update: {
+          kunci_kustom: {
+            folderColors,
+            lockedFolders
+          }
+        },
+        create: {
+          id_konfigurasi: `user_pref_${sessionData.user.id}`,
+          nama_model_ai: "user_preference",
+          prompt_sistem: `Personalisasi Direktori File Manager Pengguna ${sessionData.user.id}`,
+          kunci_kustom: {
+            folderColors,
+            lockedFolders
+          }
+        }
+      });
+
+      const resData = updated.kunci_kustom as any;
+      return {
+        success: true,
+        data: {
+          folderColors: resData.folderColors || {},
+          lockedFolders: resData.lockedFolders || {}
+        }
+      };
+    },
+    {
+      body: t.Object({
+        folderColors: t.Optional(t.Record(t.String(), t.String())),
+        lockedFolders: t.Optional(t.Record(t.String(), t.Boolean()))
+      })
+    }
+  );
+
 

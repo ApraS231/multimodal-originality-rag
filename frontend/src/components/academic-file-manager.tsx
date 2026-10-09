@@ -37,7 +37,9 @@ import {
   useCreateKelas,
   useUpdateKelas,
   useDeleteKelas,
-  useDeleteReport
+  useDeleteReport,
+  useFileManagerConfig,
+  useUpdateFileManagerConfig
 } from '../api/admin';
 
 export interface NavItem {
@@ -314,7 +316,11 @@ export default function AcademicFileManager({
 
   const deleteReportMutation = useDeleteReport();
 
-  // Load persisted colors from localStorage
+  // Konfigurasi Global File Manager dari Database (Sinkronisasi Antar-Perangkat)
+  const { data: remoteConfig } = useFileManagerConfig();
+  const updateFileManagerConfigMutation = useUpdateFileManagerConfig();
+
+  // 1. Muat warna dan status kunci awal dari localStorage (mencegah kedipan UI)
   useEffect(() => {
     try {
       const savedColors = localStorage.getItem('stitek_filemanager_colors');
@@ -327,14 +333,55 @@ export default function AcademicFileManager({
     }
   }, []);
 
+  // 2. Sinkronkan dari Konfigurasi Global Database (agar semua device melihat warna yang sama)
+  useEffect(() => {
+    if (remoteConfig) {
+      if (remoteConfig.folderColors && Object.keys(remoteConfig.folderColors).length > 0) {
+        setFolderColors(prev => ({
+          ...prev,
+          ...(remoteConfig.folderColors as Record<string, FolderColor>)
+        }));
+        try {
+          localStorage.setItem('stitek_filemanager_colors', JSON.stringify(remoteConfig.folderColors));
+        } catch {}
+      }
+
+      if (remoteConfig.lockedFolders && Object.keys(remoteConfig.lockedFolders).length > 0) {
+        setLockedFolders(prev => ({
+          ...prev,
+          ...remoteConfig.lockedFolders
+        }));
+        try {
+          localStorage.setItem('stitek_filemanager_locks', JSON.stringify(remoteConfig.lockedFolders));
+        } catch {}
+      }
+    }
+  }, [remoteConfig]);
+
   const saveColors = (newColors: Record<string, FolderColor>) => {
     setFolderColors(newColors);
-    localStorage.setItem('stitek_filemanager_colors', JSON.stringify(newColors));
+    try {
+      localStorage.setItem('stitek_filemanager_colors', JSON.stringify(newColors));
+    } catch {}
+
+    // Simpan ke preferensi akun pengguna di database
+    updateFileManagerConfigMutation.mutate({
+      folderColors: newColors,
+      lockedFolders
+    });
   };
 
   const saveLocks = (newLocks: Record<string, boolean>) => {
     setLockedFolders(newLocks);
-    localStorage.setItem('stitek_filemanager_locks', JSON.stringify(newLocks));
+    try {
+      localStorage.setItem('stitek_filemanager_locks', JSON.stringify(newLocks));
+    } catch {}
+
+    // Simpan ke preferensi akun pengguna di database
+    updateFileManagerConfigMutation.mutate({
+      folderColors,
+      lockedFolders: newLocks
+    });
   };
 
   // Close context menu on outside click
@@ -492,17 +539,15 @@ export default function AcademicFileManager({
   };
 
   const handleChangeColor = (itemId: string, newColor: FolderColor) => {
-    if (!isAdmin) return;
     const updated = { ...folderColors, [itemId]: newColor };
     saveColors(updated);
-    toast.success('Warna Diperbarui', `Warna folder disetel ke ${FOLDER_COLORS[newColor].label}.`);
+    toast.success('Warna Folder Disimpan', `Warna folder disetel ke ${FOLDER_COLORS[newColor].label} untuk akun Anda.`);
   };
 
   const handleToggleLock = (itemId: string) => {
-    if (!isAdmin) return;
     const updated = { ...lockedFolders, [itemId]: !lockedFolders[itemId] };
     saveLocks(updated);
-    toast.info('Proteksi Folder', updated[itemId] ? 'Folder dikunci.' : 'Kunci folder dibuka.');
+    toast.info('Proteksi Folder', updated[itemId] ? 'Folder disematkan/dikunci pada akun Anda.' : 'Kunci folder dibuka.');
   };
 
   const handleDeleteItem = async (item: NavItem) => {
@@ -907,7 +952,7 @@ export default function AcademicFileManager({
                           <span>Salin Tautan</span>
                         </button>
 
-                        {/* FITUR KHUSUS ADMIN (Ubah Nama, Palet Warna, Hapus) */}
+                        {/* FITUR KHUSUS ADMIN (Ubah Nama) */}
                         {isAdmin && (
                           <>
                             <div className="my-1 border-t border-slate-100" />
@@ -923,27 +968,33 @@ export default function AcademicFileManager({
                               <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                               <span>Ubah Nama</span>
                             </button>
+                          </>
+                        )}
 
-                            {isFolder && (
-                              <div className="px-2.5 py-1.5 border-t border-slate-100 mt-1">
-                                <span className="text-[10px] font-mono text-slate-400 block mb-1">Warna Folder</span>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  {Object.values(FOLDER_COLORS).slice(0, 6).map(c => (
-                                    <button
-                                      key={c.id}
-                                      type="button"
-                                      onClick={() => handleChangeColor(item.id, c.id)}
-                                      className="w-4 h-4 rounded-full transition-transform hover:scale-125 relative"
-                                      style={{ backgroundColor: c.hex }}
-                                      title={c.label}
-                                    >
-                                      {colorKey === c.id && <Check className="w-2.5 h-2.5 text-white stroke-[3] mx-auto" />}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                        {/* PALET WARNA (PERSONALISASI AKUN - DIAKSES OLEH ASLAB & ADMIN) */}
+                        {isFolder && (
+                          <div className="px-2.5 py-1.5 border-t border-slate-100 mt-1">
+                            <span className="text-[10px] font-mono text-slate-400 block mb-1">Warna Folder (Akun Anda)</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {Object.values(FOLDER_COLORS).map(c => (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() => handleChangeColor(item.id, c.id)}
+                                  className="w-4 h-4 rounded-full transition-transform hover:scale-125 relative cursor-pointer"
+                                  style={{ backgroundColor: c.hex }}
+                                  title={c.label}
+                                >
+                                  {colorKey === c.id && <Check className="w-2.5 h-2.5 text-white stroke-[3] mx-auto" />}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
+                        {/* FITUR KHUSUS ADMIN (Hapus) */}
+                        {isAdmin && (
+                          <>
                             <div className="my-1 border-t border-slate-100" />
                             <button
                               type="button"

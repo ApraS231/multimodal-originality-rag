@@ -10,7 +10,9 @@ import path from "path";
 
 // Helper Supabase Client
 async function getSupabaseClient() {
-  const config = await prisma.konfigurasiSistem.findFirst();
+  const config = await prisma.konfigurasiSistem.findFirst({
+    where: { id_konfigurasi: "global" }
+  });
   if (!config || !config.tautan_supabase || !config.kunci_api_supabase) {
     return null;
   }
@@ -130,7 +132,9 @@ export const reportsRouter = new Elysia({ prefix: "/api/reports" })
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const config = (await systemConfigCache.get("global")) || (await prisma.konfigurasiSistem.findFirst());
+      const config = (await systemConfigCache.get("global")) || (await prisma.konfigurasiSistem.findFirst({
+        where: { id_konfigurasi: "global" }
+      }));
       const uploadLimit = config?.batas_unggahan ?? 30;
 
       const uploadCount = await prisma.laporan.count({
@@ -516,6 +520,19 @@ export const reportsRouter = new Elysia({ prefix: "/api/reports" })
 
       const nav: any[] = [];
 
+      // Untuk Admin & Kalab, inisialisasi seluruh Program Studi dari database agar folder baru langsung muncul
+      if (!isAslab) {
+        const allProdis = await prisma.programStudi.findMany();
+        for (const p of allProdis) {
+          nav.push({
+            id: p.id_program_studi,
+            name: p.nama_prodi,
+            type: "prodi",
+            children: []
+          });
+        }
+      }
+
       for (const lap of laporans) {
         let prodiNode = nav.find(n => n.id === lap.id_program_studi);
         if (!prodiNode) {
@@ -556,7 +573,9 @@ export const reportsRouter = new Elysia({ prefix: "/api/reports" })
           type: "laporan",
           status: lap.status,
           skor_orisinalitas: Number(lap.skor_orisinalitas),
-          nim: lap.nim
+          nim: lap.nim,
+          tautan_berkas: lap.tautan_berkas,
+          updated_at: lap.tanggal_dibuat.toISOString()
         });
       }
 
