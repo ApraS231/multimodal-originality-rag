@@ -3,12 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as THREE from 'three';
 // @ts-expect-error - vanta does not provide official typescript definitions
-import FOG from 'vanta/dist/vanta.fog.min.js';
+import CLOUDS from 'vanta/dist/vanta.clouds.min.js';
 import { 
   Lock, 
   Mail, 
   ArrowLeft, 
-  ArrowRight,
+  ArrowRight, 
   User, 
   UserCheck, 
   Key, 
@@ -34,7 +34,7 @@ export default function Login() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Vanta.js 3D Animated Fog Background Reference
+  // Vanta.js 3D Animated Clouds Background Reference
   const vantaRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vantaEffect = useRef<any>(null);
@@ -46,22 +46,22 @@ export default function Login() {
 
     if (!vantaEffect.current && vantaRef.current) {
       try {
-        let fogFn: ((opts: unknown) => unknown) | null = null;
-        if (typeof window !== 'undefined' && (window as unknown as { VANTA?: { FOG?: (opts: unknown) => unknown } })?.VANTA?.FOG) {
-          fogFn = (window as unknown as { VANTA: { FOG: (opts: unknown) => unknown } }).VANTA.FOG;
+        let cloudsFn: ((opts: unknown) => unknown) | null = null;
+        if (typeof window !== 'undefined' && (window as unknown as { VANTA?: { CLOUDS?: (opts: unknown) => unknown } })?.VANTA?.CLOUDS) {
+          cloudsFn = (window as unknown as { VANTA: { CLOUDS: (opts: unknown) => unknown } }).VANTA.CLOUDS;
         }
-        if (!fogFn) {
-          let target: unknown = FOG;
+        if (!cloudsFn) {
+          let target: unknown = CLOUDS;
           while (target && typeof target !== 'function' && typeof target === 'object' && 'default' in target) {
             target = (target as { default: unknown }).default;
           }
           if (typeof target === 'function') {
-            fogFn = target as (opts: unknown) => unknown;
+            cloudsFn = target as (opts: unknown) => unknown;
           }
         }
 
-        if (typeof fogFn === 'function') {
-          vantaEffect.current = fogFn({
+        if (typeof cloudsFn === 'function') {
+          vantaEffect.current = cloudsFn({
             el: vantaRef.current,
             THREE: THREE,
             mouseControls: true,
@@ -69,19 +69,20 @@ export default function Login() {
             gyroControls: false,
             minHeight: 200.0,
             minWidth: 200.0,
-            highlightColor: 0xffc300,
-            midtoneColor: 0xff1f00,
-            lowlightColor: 0x2d00ff,
-            baseColor: 0xffebeb,
-            blurFactor: 0.6,
-            zoom: 1.0,
+            backgroundColor: 0xffffff,
+            skyColor: 0x68b8d7,
+            cloudColor: 0xadc1de,
+            cloudShadowColor: 0x183550,
+            sunColor: 0xff9919,
+            sunGlareColor: 0xff6633,
+            sunlightColor: 0xff9933,
             speed: 1.0,
           });
         } else {
-          console.error('Vanta FOG function not found after unwrapping. FOG is:', FOG);
+          console.error('Vanta CLOUDS function not found after unwrapping. CLOUDS is:', CLOUDS);
         }
       } catch (err) {
-        console.error('Failed to initialize Vanta FOG:', err);
+        console.error('Failed to initialize Vanta CLOUDS:', err);
       }
     }
 
