@@ -427,7 +427,7 @@ export default function Welcome() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
               <div className="lg:col-span-8 space-y-3 story-reveal-hero">
                 <p className="text-base sm:text-lg text-[#415A77] leading-relaxed font-readable">
-                  Veritas adalah ekosistem analitik akademik yang memetakan orisinalitas naskah praktikum dan laporan tugas akhir mahasiswa STITEK Bontang. Sistem menggabungkan pencarian vektor *dense*, pemfilteran bias modul berjenjang, dan inspeksi komparasi spasial geometri PDF secara objektif.
+                  Veritas adalah ekosistem analitik akademik yang memetakan orisinalitas naskah praktikum dan laporan tugas akhir mahasiswa STITEK Bontang. Sistem menggabungkan pencarian vektor <span className="italic">dense</span>, pemfilteran bias modul berjenjang, dan inspeksi komparasi spasial geometri PDF secara objektif.
                 </p>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-[11px] font-mono text-stone-500">
                   <span>MULTIMODAL RAG</span>
@@ -552,7 +552,7 @@ export default function Welcome() {
                 title: 'Ekstraksi Geometri PDF Spasial',
                 desc: 'Pemetaan koordinat fisik teks dan visual per halaman',
                 classification: 'Analisis Spasial',
-                methodology: 'PyMuPDF Bounding Box ($BBox$)',
+                methodology: 'PyMuPDF Bounding Box',
                 output: 'Matriks Koordinat Objek',
               },
               {
@@ -560,7 +560,7 @@ export default function Welcome() {
                 title: 'Pencarian Hibrida RRF',
                 desc: 'Penggabungan ranking kemiripan dense dan leksikal',
                 classification: 'Retrieval Engine',
-                methodology: 'Reciprocal Rank Fusion ($k = 60$)',
+                methodology: 'Reciprocal Rank Fusion (k = 60)',
                 output: 'Peringkat Kemiripan Fusi',
               },
               {
