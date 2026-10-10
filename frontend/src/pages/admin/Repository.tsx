@@ -44,7 +44,7 @@ export default function AdminRepository() {
   const [previewReport, setPreviewReport] = useState<ReportItem | null>(null);
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 text-[#0D1B2A] font-sans animate-fade-in">
       {/* 1. Header Halaman */}
       <PageHeader
         title="Direktori Berkas"
