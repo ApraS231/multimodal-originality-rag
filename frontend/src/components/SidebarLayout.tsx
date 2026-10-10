@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Chatbot from './chatbot';
@@ -97,33 +98,7 @@ export default function SidebarLayout() {
     }
   };
 
-  // Tab utama untuk Bottom Navigation Bar (Fokus thumb-reach pada layar ponsel)
-  const getBottomNavItems = () => {
-    switch (role) {
-      case 'ASLAB':
-        return [
-          { name: 'Direktori', path: '/aslab/dashboard', icon: LayoutDashboard },
-          { name: 'Pengecekan', path: '/aslab/checker', icon: FileCheck },
-          { name: 'Profil', path: '/aslab/profile', icon: UserCheck },
-        ];
-      case 'KEPALA_LAB':
-        return [
-          { name: 'Rekapitulasi', path: '/kepala-lab/dashboard', icon: BarChart },
-          { name: 'Matriks', path: '/kepala-lab/matrix', icon: LayoutDashboard },
-        ];
-      case 'ADMIN':
-        return [
-          { name: 'Dasbor', path: '/admin/dashboard', icon: LayoutDashboard },
-          { name: 'Direktori', path: '/admin/repository', icon: FolderArchive },
-          { name: 'Antrean', path: '/admin/queue-monitor', icon: Activity },
-        ];
-      default:
-        return [];
-    }
-  };
-
   const navItems = getNavItems();
-  const bottomNavItems = getBottomNavItems();
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-[#F7F3E9] flex font-sans text-[#0D1B2A]">
@@ -173,64 +148,14 @@ export default function SidebarLayout() {
           </div>
         </header>
 
-        {/* 2.2 KONTEN UTAMA HALAMAN (Diberi bantalan bawah pb-22 agar tidak tertutup Bottom Bar) */}
-        <main className="flex-1 h-full overflow-y-auto relative pb-22 lg:pb-6 custom-scrollbar">
+        {/* 2.2 KONTEN UTAMA HALAMAN */}
+        <main className="flex-1 h-full overflow-y-auto relative pb-6 custom-scrollbar">
           <Outlet />
         </main>
       </div>
 
-      {/* 3. BOTTOM NAVIGATION BAR UNTUK MOBILE (Akses Jempol Cepat & Ergonomis) */}
-      <nav 
-        className="fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-[#152238]/95 backdrop-blur-md border-t border-[#415A77]/15 dark:border-white/10 px-2 py-1 flex items-center justify-around shadow-lg lg:hidden select-none"
-        aria-label="Navigasi Utama Ponsel"
-      >
-        {bottomNavItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all rounded-lg active:scale-95 cursor-pointer ${
-                  isActive
-                    ? 'text-[#0D1B2A] dark:text-[#D4AF37] font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div className={`p-1 rounded-md transition-colors ${isActive ? 'bg-[#0D1B2A]/10 dark:bg-[#D4AF37]/20 text-[#0D1B2A] dark:text-[#D4AF37]' : ''}`}>
-                    <Icon className="w-4.5 h-4.5" />
-                  </div>
-                  <span className="text-[10px] tracking-tight truncate mt-0.5">{item.name}</span>
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] -mb-1 mt-0.5" />}
-                </>
-              )}
-            </NavLink>
-          );
-        })}
-
-        {/* Tombol Pemicu Drawer Menu Lengkap */}
-        <button
-          type="button"
-          onClick={() => setIsDrawerOpen(true)}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all rounded-lg active:scale-95 cursor-pointer ${
-            isDrawerOpen
-              ? 'text-[#0D1B2A] dark:text-[#D4AF37] font-bold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
-          }`}
-          aria-label="Menu Lengkap"
-        >
-          <div className={`p-1 rounded-md transition-colors ${isDrawerOpen ? 'bg-[#0D1B2A]/10 dark:bg-[#D4AF37]/20' : ''}`}>
-            <Menu className="w-4.5 h-4.5" />
-          </div>
-          <span className="text-[10px] tracking-tight truncate mt-0.5">Menu</span>
-        </button>
-      </nav>
-
-      {/* 4. SLIDE-OVER NAVIGATION DRAWER (Daftar Menu Komprehensif Beranimasi Mulus) */}
-      {isDrawerOpen && (
+      {/* 3. SLIDE-OVER NAVIGATION DRAWER (SIDEBAR MOBILE) */}
+      {isDrawerOpen && typeof document !== 'undefined' && createPortal(
         <div 
           className="fixed inset-0 z-50 lg:hidden bg-black/45 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
           onClick={() => setIsDrawerOpen(false)}
@@ -315,7 +240,8 @@ export default function SidebarLayout() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 5. Maskot Mochi Veritas AI (Draggable bebas dengan posisi default aman) */}

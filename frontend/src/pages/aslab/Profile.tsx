@@ -6,7 +6,7 @@ import LoadingSpinner from '../../components/ui/loading-spinner';
 import PageHeader from '../../components/ui/page-header';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { Card, StatCard } from '../../components/ui/card';
+import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 
 interface UserProfileData {
@@ -147,27 +147,7 @@ export default function Profile() {
         description="Kelola data profil asisten laboratorium serta tinjau kelas dan mata kuliah bimbingan aktif yang ditugaskan administrator."
       />
 
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-        <StatCard
-          title="Wewenang Sistem"
-          value={profil?.peran || 'ASLAB'}
-          subtitle="Status Terverifikasi Aktif"
-          variant="default"
-        />
-        <StatCard
-          title="Kelas Diampu"
-          value={assignedKelasList.length}
-          subtitle="Bimbingan Terdaftar"
-          variant="default"
-        />
-        <StatCard
-          title="Mata Kuliah Diampu"
-          value={assignedMatkulList.length}
-          subtitle="Kurikulum Laboratorium"
-          variant="brass"
-        />
-      </div>
+
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
