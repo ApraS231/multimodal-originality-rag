@@ -19,7 +19,7 @@ import {
   Hash
 } from 'lucide-react';
 import PageHeader from '../../components/ui/page-header';
-import { Card, StatCard } from '../../components/ui/card';
+import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { SegmentedControl } from '../../components/ui/grouped-list';
 
@@ -292,27 +292,7 @@ export default function Checker() {
         }
       />
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-        <StatCard
-          title="Pipa Analisis"
-          value="Hybrid RRF"
-          subtitle="Dense + Full-Text Search"
-          variant="brass"
-        />
-        <StatCard
-          title="Format Valid"
-          value="PDF (Maks. 25 MB)"
-          subtitle="PyMuPDF + EasyOCR Fallback"
-          variant="navy"
-        />
-        <StatCard
-          title="Verifikasi Visual"
-          value="CLIP Cosine"
-          subtitle="Deteksi Duplikasi Diagram & Gambar"
-          variant="default"
-        />
-      </div>
+
 
       {/* Segmented Mode Switcher */}
       <SegmentedControl
